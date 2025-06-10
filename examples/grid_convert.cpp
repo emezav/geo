@@ -73,16 +73,8 @@ int main(int argc, char *argv[])
     usage(argv[0]);
   }
 
-
-/*
-cout << fs::current_path().string() << endl;
-
-string inputFormat = "envi";
-string inputFile ="Grids\\enviFloat.flt";
-string outputFormat = "txt";
-string outputFile = "Grids\\grid.txt";
-*/
-
+  // Get parameters
+  
   GridFormat iFormat = geo::getFormat(inputFormat);
   GridFormat oFormat = geo::getFormat(outputFormat);
 
