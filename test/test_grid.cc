@@ -146,9 +146,14 @@ TEST(GridTest, SavingGrids)
   // Status must be true, grid saved successfully.
   EXPECT_EQ(status, geo::status::SUCCESS);
 
+  // Save txt grid
+  status = geo::SaveGrid(grid, (currentPath / "grid.txt").string(), GridFormat::TEXT);
 
-   // Save txt grid
-  status = geo::SaveGrid(grid, (currentPath / "flat.txt").string(), GridFormat::TEXT);
+  // Status must be true, grid saved successfully.
+  EXPECT_EQ(status, geo::status::SUCCESS);
+
+  // Save txt grid
+  status = geo::SaveGrid(grid, (currentPath / "gridrReverse.txt").string(), GridFormat::TEXT_REVERSE);
 
   // Status must be true, grid saved successfully.
   EXPECT_EQ(status, geo::status::SUCCESS);

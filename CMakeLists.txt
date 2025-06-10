@@ -44,26 +44,26 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Uncomment this section if you want to create project executable
 
 # Add c/c++ headers and sources
-# UNCOMMENT THIS IF YOU INTEND TO HAVE TOUR OWN main.cpp
+# UNCOMMENT THIS IF YOU INTEND TO USE src/main.cpp
 #file(GLOB project_sources "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/include/*.h")
 
 # Add executable to the project
-# UNCOMMENT THIS IF YOU INTEND TO HAVE TOUR OWN main.cpp
+# UNCOMMENT THIS IF YOU INTEND TO USE src/main.cpp
 #add_executable (${PROJECT_NAME} ${project_sources})
 
 # Set default start project
 #set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 # Set link flags to mirror project link flags
-# UNCOMMENT THIS IF YOU INTEND TO HAVE TOUR OWN main.cpp
+# UNCOMMENT THIS IF YOU INTEND TO USE src/main.cpp
 #set_property(TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS ${PROJ_LINK_FLAGS})
 
 # Set debugger working directory to source dir
-# UNCOMMENT THIS IF YOU INTEND TO HAVE TOUR OWN main.cpp
+# UNCOMMENT THIS IF YOU INTEND TO USE src/main.cpp
 #set_property(TARGET ${PROJECT_NAME} PROPERTY DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Set debugger working directory to source dir (for Visual Studio)
-# UNCOMMENT THIS IF YOU INTEND TO HAVE TOUR OWN main.cpp
+# UNCOMMENT THIS IF YOU INTEND TO USE src/main.cpp
 #set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # End project executable section

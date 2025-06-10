@@ -18,5 +18,10 @@ namespace fs = std::filesystem;
  * @return int Exit status
  */
 int main(int argc, char * argv) {
+
+    // This program is not compiled, it is provided only as a placeholder.
+
+    // See the examples/ and test/ folders for examples.
+
     exit(EXIT_SUCCESS);
 }
