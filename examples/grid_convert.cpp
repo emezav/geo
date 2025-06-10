@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
   }
 
   // Get parameters
-  
   GridFormat iFormat = geo::getFormat(inputFormat);
   GridFormat oFormat = geo::getFormat(outputFormat);
 
@@ -87,7 +86,6 @@ int main(int argc, char *argv[])
     cerr << "Unknown output format " << outputFormat << endl;
     exit(EXIT_FAILURE);
   }
-
 
   Grid grid;
 

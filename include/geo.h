@@ -136,7 +136,6 @@ namespace geo
 
         /**
          * @brief trim from start (in place)
-         *
          * @param [in,out] s A string to process.
          *
          * @returns A reference to a string.
@@ -4338,7 +4337,7 @@ namespace geo
 
             /**
              * @brief Get the Parameters object
-             * 
+             *
              * @return tuple<int, int, double, double, double, double, float, fileType> rows, columns, x0, y0, dx, dy, nodata, file type
              */
             tuple<int, int, double, double, double, double, float, fileType> getParameters()
