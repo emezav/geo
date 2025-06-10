@@ -21,6 +21,8 @@ int main(int argc, char * argv) {
 
     // This program is not compiled, it is provided only as a placeholder.
 
+    // If you want this file to be compiled, uncomment the Project executable section
+
     // See the examples/ and test/ folders for examples.
 
     exit(EXIT_SUCCESS);

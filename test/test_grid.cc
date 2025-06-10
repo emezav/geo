@@ -95,9 +95,6 @@ TEST(GridTest, SavingGrids)
   // Status must be false, grid is empty.
   EXPECT_EQ(status, geo::status::FAILURE);
 
-  // Create a test grid
-  grid = createSequentialGrid(GridFormat::SURFER_FLOAT, rows, columns, x0, y0, dx, dy);
-
   //create "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
 
@@ -105,6 +102,9 @@ TEST(GridTest, SavingGrids)
   fs::create_directories(currentPath);
 
   ASSERT_TRUE(fs::is_directory(currentPath));
+
+  // Create a test grid
+  grid = createSequentialGrid(GridFormat::SURFER_FLOAT, rows, columns, x0, y0, dx, dy);
 
   // Save ESRI ASCII grid
   status = geo::Esri::saveAscii(grid, (currentPath / "esri.asc").string());
@@ -128,7 +128,7 @@ TEST(GridTest, SavingGrids)
   EXPECT_EQ(status, geo::status::SUCCESS);
 
   // Save Surfer ASCII grid
-  status = geo::Surfer::save(grid, (currentPath / "surferAscii.grd").string(), geo::Surfer::fileType::FLOAT);
+  status = geo::Surfer::save(grid, (currentPath / "surferAscii.grd").string(), geo::Surfer::fileType::TEXT);
 
   // Status must be true, grid saved successfully.
   EXPECT_EQ(status, geo::status::SUCCESS);

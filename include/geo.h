@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -4441,17 +4442,17 @@ namespace geo
             void parseBinary64Header(FILE *fp)
             {
 
-                long headerSection[2];
+                uint32_t headerSection[2];
 
                 // Read header section
-                if (fread(headerSection, sizeof(long), 2, fp) != 2)
+                if (fread(headerSection, sizeof(uint32_t), 2, fp) != 2)
                 {
                     return;
                 }
 
                 // Format of grid section:
                 // Header (4 bytes) 0x44495247 string GRID
-                // size    long
+                // size    long (4 bytes - uint32_t)
                 // nrow    long
                 // ncol    long
                 // xll     double
@@ -4479,9 +4480,9 @@ namespace geo
                     return;
                 }
 
-                long length{};
-                long nRow{};
-                long nCol{};
+                uint32_t length{};
+                uint32_t nRow{};
+                uint32_t nCol{};
                 double xll{};
                 double yll{};
                 double xSize{};
@@ -4494,12 +4495,12 @@ namespace geo
                 // Data is already in memory, cast the values
                 size_t pos = 4;
                 // Read long values
-                length = *reinterpret_cast<long *>(&gridSection[pos]);
-                pos += sizeof(long);
-                nRow = *reinterpret_cast<long *>(&gridSection[pos]);
-                pos += sizeof(long);
-                nCol = *reinterpret_cast<long *>(&gridSection[pos]);
-                pos += sizeof(long);
+                length = *reinterpret_cast<uint32_t *>(&gridSection[pos]);
+                pos += sizeof(uint32_t);
+                nRow = *reinterpret_cast<uint32_t *>(&gridSection[pos]);
+                pos += sizeof(uint32_t);
+                nCol = *reinterpret_cast<uint32_t *>(&gridSection[pos]);
+                pos += sizeof(uint32_t);
 
                 // Read double values
                 xll = *reinterpret_cast<double *>(&gridSection[pos]);
@@ -4526,7 +4527,7 @@ namespace geo
 
                 // Now read data section
                 char gridDataSection[4];
-                long gridDataLength;
+                uint32_t gridDataLength;
 
                 if (fread(gridDataSection, sizeof(char), 4, fp) != 4)
                 {
@@ -4543,7 +4544,7 @@ namespace geo
                 }
 
                 // Read grid data length in bytes
-                if (fread(&gridDataLength, sizeof(long), 1, fp) != 1)
+                if (fread(&gridDataLength, sizeof(uint32_t), 1, fp) != 1)
                 {
                     return;
                 }
@@ -4694,7 +4695,7 @@ namespace geo
                 auto [status, cnt, data] = DataSet<float>::loadBinary(fp, fileSize);
                 count = cnt;
                 gridData = data;
-                format = GridFormat::ENVI_FLOAT;
+                format = GridFormat::SURFER_FLOAT;
             }
             else if (gridType == fileType::DOUBLE)
             {
@@ -4721,7 +4722,7 @@ namespace geo
                     return status::FAILURE;
                 }
 
-                format = GridFormat::ENVI_DOUBLE;
+                format = GridFormat::SURFER_DOUBLE;
             }
             else
             {
@@ -4888,23 +4889,27 @@ namespace geo
             }
             else if (fileType == fileType::DOUBLE)
             {
-                long nRow = rows;
-                long nCol = columns;
-                long val;
+                uint32_t nRow = rows;
+                uint32_t nCol = columns;
+                uint32_t val;
                 double dVal{};
 
                 // Write Surfer 7 binary header
                 fwrite("DSRB", sizeof(char), 4, fp); // Id for Header section
                 val = 4;
-                fwrite(&val, sizeof(long), 1, fp); // Size of header section
+
+                fwrite(&val, sizeof(uint32_t), 1, fp); // Size of header section
+
                 val = 1;
-                fwrite(&val, sizeof(long), 1, fp);   // Version
+                fwrite(&val, sizeof(uint32_t), 1, fp);   // Version
+
                 fwrite("GRID", sizeof(char), 4, fp); // ID indicating a grid section
                 val = 72;
-                fwrite(&val, sizeof(long), 1, fp); // Length in bytes of the grid section
 
-                fwrite(&nRow, sizeof(long), 1, fp); // Grid section: Row
-                fwrite(&nCol, sizeof(long), 1, fp); // Grid section: Row
+                fwrite(&val, sizeof(uint32_t), 1, fp); // Length in bytes of the grid section
+
+                fwrite(&nRow, sizeof(uint32_t), 1, fp); // Grid section: Row
+                fwrite(&nCol, sizeof(uint32_t), 1, fp); // Grid section: Row
 
                 fwrite(&xMin, sizeof(double), 1, fp); // xll (center of the lower left grid)
                 fwrite(&yMin, sizeof(double), 1, fp); // yll (center of the lower left grid)
@@ -4921,7 +4926,7 @@ namespace geo
 
                 fwrite("DATA", sizeof(char), 4, fp); // ID indicating a data section
                 val = (rows * columns) * sizeof(double);
-                fwrite(&val, sizeof(long), 1, fp); // Length in bytes of the data section
+                fwrite(&val, sizeof(uint32_t), 1, fp); // Length in bytes of the data section
             }
             else
             {

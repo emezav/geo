@@ -60,7 +60,8 @@ TEST(DataSetTest, LoadingDatasets)
   fs::path currentPath(fs::current_path() / "data");
   ASSERT_TRUE(fs::is_directory(currentPath));
 
-  auto [status, count, data] = FloatDataSet::loadText(currentPath.string());
+  const string strPath = (currentPath / "test.txt").string();
+  auto [status, count, data] = FloatDataSet::loadText(strPath);
 
   EXPECT_TRUE(isSequentialData(data, count));
 
