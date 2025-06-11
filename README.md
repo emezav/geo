@@ -2,7 +2,13 @@
 
 This single-file header allows reading/writing geospatial grids in several formats.
 
+Copy include/geo.h into your project include path.
+
+Note: src/main.cpp is just a placeholder, it does not contain any code.
+
 See examples/ and test/ for usage.
+
+Generate documetation with doxygen.
 
 ## ESRI ASCII Grid - .asc
 
