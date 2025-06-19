@@ -713,6 +713,12 @@ namespace geo
         {"txt", GridFormat::TEXT},
         {"txtreverse", GridFormat::TEXT_REVERSE}};
 
+    /**
+     * @brief Get the format from a string
+     *
+     * @param formatString One of the supported grid formats
+     * @return GridFormat, GridFormat::UNKNOWN if string is not one of the supported formats.
+     */
     static inline GridFormat getFormat(string formatString)
     {
         GridFormat format = GridFormat::UNKNOWN;
@@ -2374,7 +2380,44 @@ namespace geo
          */
         float &operator()(int row, int column)
         {
-            return data[(row * columns) + column];
+            return this->data[(row * columns) + column];
+        }
+
+        /**
+         * @brief Get a reference to the element at the specified position
+         * @param row Row
+         * @param column Column
+         * @return float&
+         */
+        float &operator()(int row, int column) const
+        {
+            return this->data[(row * columns) + column];
+        }
+
+        float equalsAt(const Grid &rhs, int row, int column, float rpe = 1.0f) const
+        {
+            const float valueA = (*this)(row, column);
+            const float valueB = rhs(row, column);
+            // Check if both values are nan, in such case they're considered equal.
+            if (std::isnan(valueA) && std::isnan(valueB))
+            {
+                return true;
+            }
+
+            float err = fabs((valueB - valueA) / valueB) * 100.0f;
+
+            return err < rpe;
+        }
+
+        /**
+         * @brief Checks if this grid has equal dimensions with rhs
+         * @param rhs Grid to compare
+         * @return true if both grids have the same dimensions
+         * @return false  when both grids have different dimensions
+         */
+        bool equalDimensions(const Grid &rhs) const
+        {
+            return (this->rows == rhs.rows && this->columns == rhs.columns);
         }
 
         /**
@@ -4901,7 +4944,7 @@ namespace geo
                 fwrite(&val, sizeof(uint32_t), 1, fp); // Size of header section
 
                 val = 1;
-                fwrite(&val, sizeof(uint32_t), 1, fp);   // Version
+                fwrite(&val, sizeof(uint32_t), 1, fp); // Version
 
                 fwrite("GRID", sizeof(char), 4, fp); // ID indicating a grid section
                 val = 72;
@@ -5029,6 +5072,10 @@ namespace geo
 
     }; // End class Surfer
 
+    /**
+     * @brief Utilities
+     *
+     */
     struct Util
     {
 
@@ -5119,6 +5166,38 @@ namespace geo
             return true;
         }
     };
+
+    /**
+     * @brief Loads a grid, guessing the format from the extension.
+     * @param grid Target grid
+     * @param path File path
+     * @return status status::SUCCESS if grid was loaded, status::FAILURE if loading failed.
+     */
+    static inline status LoadGrid(Grid &grid, const string &path)
+    {
+
+        fs::path filePath(path);
+
+        const string ext = Strings::tolower(filePath.extension().string());
+
+        if (ext.compare(".asc") == 0)
+        {
+            return Esri::loadAscii(grid, path);
+        }
+        else if (ext.compare(".bil") == 0)
+        {
+            return Esri::loadFloat(grid, path);
+        }
+        else if (ext.compare(".flt") == 0)
+        {
+            return Envi::loadBinary(grid, path);
+        }
+        else if (ext.compare(".grd") == 0)
+        {
+            return Surfer::load(grid, path);
+        }
+        return status::FAILURE;
+    }
 
     /**
      * @brief Loads a grid
