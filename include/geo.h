@@ -650,7 +650,6 @@ namespace geo
         static bool matches(const string &str, char opening, char closing)
         {
             int count{};
-            bool isOpened = false;
 
             // Check if opening and closing char are equal
             if (opening == closing)
@@ -1577,7 +1576,6 @@ namespace geo
             char *end{};
 
             int count = 0;
-            int i = 0;
 
             // Max item size in text representation
             size_t maxItemSize = 0;
@@ -1646,7 +1644,7 @@ namespace geo
 
                     // Reallocate the whole memory block
                     // Save current char data offset
-                    size_t charDataOffset = charData - startData;
+                    // size_t charDataOffset = charData - startData;
 
                     // Offset of current position, pos and end
                     size_t currentItemOffset = (char *)currentItem - startData;
@@ -1873,8 +1871,6 @@ namespace geo
 
             int lastPercent = -1;
 
-            int nWritten = 0;
-
             size_t totalWritten = 0;
 
             if (batchSize == 0)
@@ -1937,8 +1933,6 @@ namespace geo
 
             int lastPercent = -1;
 
-            int nWritten = 0;
-
             size_t totalWritten = 0;
 
             if (batchSize == 0)
@@ -1990,8 +1984,6 @@ namespace geo
             offset > 0 && fseek(fp, offset, SEEK_SET);
 
             int lastPercent = -1;
-
-            int nWritten = 0;
 
             size_t totalWritten = 0;
 
@@ -2082,10 +2074,7 @@ namespace geo
 
             int lastPercent = -1;
 
-            int nWritten = 0;
-
             size_t totalWritten = 0;
-            bool firstInLine = true;
 
             if (batchSize == 0)
             {
@@ -3092,8 +3081,6 @@ namespace geo
                 fseek(fp, 0L, SEEK_SET);
 
                 string headerString; // Header string
-
-                int count = 0; // Count of lines read so far
 
                 // Binary header needs to read the whole file
                 while (!feof(fp))
@@ -4398,11 +4385,6 @@ namespace geo
             {
                 string headerString;
 
-                char line[BUFSIZ];
-
-                char field1[BUFSIZ];
-                char field2[BUFSIZ];
-
                 if (fscanf(fp, "%d%d%lf%lf%lf%lf%lf%lf",
                            &this->columns, &this->rows,
                            &this->x0Center, &this->xMaxCenter,
@@ -4523,7 +4505,7 @@ namespace geo
                     return;
                 }
 
-                uint32_t length{};
+                // uint32_t length{};
                 uint32_t nRow{};
                 uint32_t nCol{};
                 double xll{};
@@ -4532,13 +4514,14 @@ namespace geo
                 double ySize{};
                 double zMin{};
                 double zMax{};
-                double rotation{};
+                // double rotation{};
                 double blankValue{nan};
 
                 // Data is already in memory, cast the values
                 size_t pos = 4;
                 // Read long values
-                length = *reinterpret_cast<uint32_t *>(&gridSection[pos]);
+                // length = *reinterpret_cast<uint32_t *>(&gridSection[pos]);
+                // skip length
                 pos += sizeof(uint32_t);
                 nRow = *reinterpret_cast<uint32_t *>(&gridSection[pos]);
                 pos += sizeof(uint32_t);
@@ -4558,7 +4541,8 @@ namespace geo
                 pos += sizeof(double);
                 zMax = *reinterpret_cast<double *>(&gridSection[pos]);
                 pos += sizeof(double);
-                rotation = *reinterpret_cast<double *>(&gridSection[pos]);
+                // rotation = *reinterpret_cast<double *>(&gridSection[pos]);
+                //  skip rotation
                 pos += sizeof(double);
                 blankValue = *reinterpret_cast<double *>(&gridSection[pos]);
 
@@ -4846,8 +4830,6 @@ namespace geo
             dataP.replace_extension(".grd");
 
             // Use low level primitives to improve performance
-            int percent = 0;
-            int totalWritten = 0;
 
             FILE *fp;
 
@@ -4991,8 +4973,6 @@ namespace geo
 
             // Save actual data
 
-            int lastPercent = -1;
-
             geoStatus status;
 
             if (fileType == fileType::TEXT)
@@ -5034,9 +5014,6 @@ namespace geo
             }
 
             fclose(fp);
-
-            // ifDebug([&]
-            //         { cout << "Written " << dataP.string() << endl; });
 
             if (status != geoStatus::SUCCESS)
             {
@@ -5178,7 +5155,9 @@ namespace geo
 
         fs::path filePath(path);
 
-        const string ext = Strings::tolower(filePath.extension().string());
+        string fileExt = filePath.extension().string();
+
+        string ext = Strings::tolower(fileExt);
 
         if (ext.compare(".asc") == 0)
         {
