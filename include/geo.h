@@ -738,7 +738,7 @@ namespace geo
     /**
      * @brief Status of the operation.
      */
-    enum class status : int
+    enum class geoStatus : int
     {
         SUCCESS = 0,  /*!< OK */
         FAILURE = -1, /*!< Operation was not successful. */
@@ -956,7 +956,7 @@ namespace geo
      * @brief Save projection file
      * @param path Path to grid file
      */
-    static status saveWGS84Projection(const char *path)
+    static geoStatus saveWGS84Projection(const char *path)
     {
 
         fs::path filePath = fs::weakly_canonical(fs::path(string(path)));
@@ -964,7 +964,7 @@ namespace geo
         // If grid file does not exist, don't create projection file
         if (!fs::exists(filePath))
         {
-            return status::FAILURE;
+            return geoStatus::FAILURE;
         }
 
         // Projection file has .prj extension
@@ -982,10 +982,10 @@ namespace geo
 
         if (!ofs.is_open())
         {
-            return status::FAILURE;
+            return geoStatus::FAILURE;
         }
 
-        return status::SUCCESS;
+        return geoStatus::SUCCESS;
     }
 
     /**
@@ -1440,16 +1440,16 @@ namespace geo
          * @param path Path of the dataset file
          * @return tuple<status, size_t, T *>
          */
-        static tuple<status, size_t, T *> loadBinary(string path)
+        static tuple<geoStatus, size_t, T *> loadBinary(string path)
         {
             if (!path.length())
             {
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
 
             if (!fs::exists(path))
             {
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
 
             fs::path binaryPath(path);
@@ -1466,7 +1466,7 @@ namespace geo
                 // Unable to allocate memory?
                 if (binaryData == nullptr)
                 {
-                    return {status::FAILURE, 0, nullptr};
+                    return {geoStatus::FAILURE, 0, nullptr};
                 }
                 FILE *binFile = fopen(binaryPath.string().c_str(), "rb");
                 if (binFile != NULL)
@@ -1476,10 +1476,10 @@ namespace geo
 
                     fclose(binFile);
 
-                    return {status::SUCCESS, readItems, binaryData};
+                    return {geoStatus::SUCCESS, readItems, binaryData};
                 }
             }
-            return {status::FAILURE, 0, nullptr};
+            return {geoStatus::FAILURE, 0, nullptr};
         }
 
         /**
@@ -1489,11 +1489,11 @@ namespace geo
          * @param fileSize Estimated file size
          * @return tuple<status, size_t, T *>  status, count and pointer to read data
          */
-        static tuple<status, size_t, T *> loadBinary(FILE *fp, size_t fileSize)
+        static tuple<geoStatus, size_t, T *> loadBinary(FILE *fp, size_t fileSize)
         {
             if (fp == NULL)
             {
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
             // Calculate how many items are stored
             size_t binaryItems = fileSize / sizeof(T);
@@ -1505,7 +1505,7 @@ namespace geo
                 // Unable to allocate memory?
                 if (binaryData == nullptr)
                 {
-                    return {status::FAILURE, 0, nullptr};
+                    return {geoStatus::FAILURE, 0, nullptr};
                 }
 
                 size_t readItems = fread(binaryData, sizeof(T), binaryItems, fp);
@@ -1515,10 +1515,10 @@ namespace geo
                 if (binaryData != nullptr)
                 {
 
-                    return {status::SUCCESS, readItems, binaryData};
+                    return {geoStatus::SUCCESS, readItems, binaryData};
                 }
             }
-            return {status::FAILURE, 0, nullptr};
+            return {geoStatus::FAILURE, 0, nullptr};
         }
 
         /**
@@ -1528,7 +1528,7 @@ namespace geo
          * @param fileSize Estimated file size
          * @return tuple<size_t, T*> count and array of T data <0, nullptr> if no data was read.
          */
-        static tuple<status, size_t, T *> loadText(FILE *fp, size_t fileSize)
+        static tuple<geoStatus, size_t, T *> loadText(FILE *fp, size_t fileSize)
         {
 
             // Parser function
@@ -1550,16 +1550,16 @@ namespace geo
                     string errorMessage = string("Unregistered type ") + typeid(T).name();
                     std::cout << errorMessage << endl;
                 }
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
 
             // Get total char data length and pointer to the char data buffer
             auto [readDataStatus, charDataLength, charData] = readData(fp, fileSize);
 
             // Check if char data was not loaded
-            if (readDataStatus != status::SUCCESS || charDataLength == 0)
+            if (readDataStatus != geoStatus::SUCCESS || charDataLength == 0)
             {
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
 
             // Pointer to the start of the data buffer
@@ -1659,7 +1659,7 @@ namespace geo
                     if (startData == NULL)
                     {
                         cerr << "Unable to relocate data" << endl;
-                        return {status::FAILURE, 0, nullptr};
+                        return {geoStatus::FAILURE, 0, nullptr};
                     }
 
                     // Fill remaing data with spaces
@@ -1693,7 +1693,7 @@ namespace geo
 
                 if (startData == NULL)
                 {
-                    return {status::FAILURE, 0, nullptr};
+                    return {geoStatus::FAILURE, 0, nullptr};
                 }
                 else
                 {
@@ -1706,7 +1706,7 @@ namespace geo
                     // currentItem points to past one the last element
                     *currentItem = sentinel;
 
-                    return {status::SUCCESS, count, reinterpret_cast<T *>(startData)};
+                    return {geoStatus::SUCCESS, count, reinterpret_cast<T *>(startData)};
                 }
             }
             else
@@ -1716,10 +1716,10 @@ namespace geo
                 {
                     // Force dispose.
                     free(startData);
-                    return {status::FAILURE, 0, nullptr};
+                    return {geoStatus::FAILURE, 0, nullptr};
                 }
             }
-            return {status::FAILURE, 0, nullptr};
+            return {geoStatus::FAILURE, 0, nullptr};
         }
 
         /**
@@ -1728,11 +1728,11 @@ namespace geo
          * @param path File path
          * @return tuple<size_t, T *> size and pointer to array
          */
-        static tuple<status, size_t, T *> loadText(string path)
+        static tuple<geoStatus, size_t, T *> loadText(string path)
         {
             if (!fs::exists(path))
             {
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
 
             // Get type name
@@ -1755,7 +1755,7 @@ namespace geo
             if (fp == NULL)
             {
                 cerr << "Unable to open " << path << " for reading" << endl;
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
 
             return loadText(fp, fileSize);
@@ -1767,7 +1767,7 @@ namespace geo
          * @param fileSize File size
          * @return tuple<status, size_t, char *> Operation result
          */
-        static tuple<status, size_t, char *> readData(FILE *fp, size_t fileSize)
+        static tuple<geoStatus, size_t, char *> readData(FILE *fp, size_t fileSize)
         {
             // Get system page size
             int pageSize = getPageSize();
@@ -1777,7 +1777,7 @@ namespace geo
 
             if (data == NULL)
             {
-                return {status::FAILURE, 0, nullptr};
+                return {geoStatus::FAILURE, 0, nullptr};
             }
 
             // Set two bytes to null AFTER file data in memory
@@ -1827,7 +1827,7 @@ namespace geo
                     }
                 }
             }
-            return {status::SUCCESS, total, data};
+            return {geoStatus::SUCCESS, total, data};
         }
 
         /**
@@ -1838,17 +1838,17 @@ namespace geo
          * @param batchSize Insert a newline after writing this amount of items, 0 = single batch
          * @return status Operation status
          */
-        static status saveText(string path, const T *data, size_t count, int batchSize)
+        static geoStatus saveText(string path, const T *data, size_t count, int batchSize)
         {
             // Open file in binary mode to avoid weird Windows file pointer mangling
             FILE *fp = fopen(path.c_str(), "wb");
 
             if (fp == nullptr)
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
-            status status = saveText(fp, 0, data, count, batchSize);
+            geoStatus status = saveText(fp, 0, data, count, batchSize);
 
             fclose(fp);
 
@@ -1865,7 +1865,7 @@ namespace geo
          * @param batchSize Insert a newline after writing this amount of items, 0 = single batch
          * @return status  Operation status
          */
-        static status saveText(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
+        static geoStatus saveText(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
         {
 
             // Seek starting file position
@@ -1916,7 +1916,7 @@ namespace geo
             //                  cout <<endl;
             //                  cout.flush(); });
 
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -1929,7 +1929,7 @@ namespace geo
          * @param batchSize Count of items to write on each batch
          * @return status  Operation status
          */
-        static status saveBinary(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
+        static geoStatus saveBinary(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
         {
 
             // Seek starting file position
@@ -1970,7 +1970,7 @@ namespace geo
                 }
             }
 
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -1983,7 +1983,7 @@ namespace geo
          * @param batchSize Count of items to write on each batch
          * @return status  Operation status
          */
-        static status saveBinaryReverse(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
+        static geoStatus saveBinaryReverse(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
         {
 
             // Seek starting file position
@@ -2036,7 +2036,7 @@ namespace geo
             //                  cout <<endl;
             //                  cout.flush(); });
 
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -2047,17 +2047,17 @@ namespace geo
          * @param batchSize Insert a newline after writing this amount of items, 0 = single line
          * @return status Operation status
          */
-        static status saveTextReverseBatches(string path, const T *data, size_t count, int batchSize)
+        static geoStatus saveTextReverseBatches(string path, const T *data, size_t count, int batchSize)
         {
             // Open file in binary mode to avoid weird Windows file pointer mangling
             FILE *fp = fopen(path.c_str(), "wb");
 
             if (fp == nullptr)
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
-            status status = saveTextReverseBatches(fp, 0, data, count, batchSize);
+            geoStatus status = saveTextReverseBatches(fp, 0, data, count, batchSize);
 
             fclose(fp);
 
@@ -2074,7 +2074,7 @@ namespace geo
          * @param batchSize Insert a newline after writing this amount of items, 0 = single line
          * @return status  Operation status
          */
-        static status saveTextReverseBatches(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
+        static geoStatus saveTextReverseBatches(FILE *fp, size_t offset, const T *data, size_t count, int batchSize)
         {
 
             // Seek starting file position
@@ -2124,7 +2124,7 @@ namespace geo
             //                  cout <<endl;
             //                  cout.flush(); });
 
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
     }; // End struct DataSet
 
@@ -2472,7 +2472,7 @@ namespace geo
          * @param reverseRows true if last row is the first line on the file
          * @return status Operation status
          */
-        status loadText(
+        geoStatus loadText(
             string path,
             int rows,
             int columns,
@@ -2489,20 +2489,20 @@ namespace geo
 
             if (!fs::exists(path) || !fs::is_regular_file(path))
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             size_t fileSize = fs::file_size(path);
             if (fileSize <= 0)
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             FILE *fp = fopen(path.c_str(), "r");
 
             if (fp == NULL)
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             return this->loadText(fp, fileSize, rows, columns, x0, y0, dx, dy, nodata, reverseRows);
@@ -2524,7 +2524,7 @@ namespace geo
          * @return status status::SUCCESS if load was successful, status::FAILURE if load fails
          * @note File pointer is not closed.
          */
-        status loadText(
+        geoStatus loadText(
             FILE *fp,
             size_t fileSize,
             int rows,
@@ -2562,7 +2562,7 @@ namespace geo
 
             // Check if the whole file was loaded
             // If not, discard partial loaded grid
-            if (status != status::SUCCESS || count < this->rows * this->columns)
+            if (status != geoStatus::SUCCESS || count < this->rows * this->columns)
             {
                 cerr
                     << "Warning! file should contain "
@@ -2572,7 +2572,7 @@ namespace geo
                 // Dispose read data
                 this->dispose();
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Reverse rows if required
@@ -2583,7 +2583,7 @@ namespace geo
 
             this->noData = noData;
 
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -2592,7 +2592,7 @@ namespace geo
          * @param reverseRows true to store last row first
          * @return operation status
          */
-        status saveText(const char *path, bool reverseRows = false) const
+        geoStatus saveText(const char *path, bool reverseRows = false) const
         {
 
             int count = this->rows * this->columns;
@@ -2602,7 +2602,7 @@ namespace geo
                 // ifDebug([&]
                 //         { cerr << "Grid is empty, nothing to save" << endl; });
 
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             fs::path dataPath(path);
@@ -3117,7 +3117,7 @@ namespace geo
          * @param path Path to the ESRI ASCII grid (.asc) file
          * @return status status::SUCCESS if load was successful, status::FAILURE if load fails
          */
-        static status loadAscii(Grid &grid, const string &path)
+        static geoStatus loadAscii(Grid &grid, const string &path)
         {
 
             fs::path p(path);
@@ -3125,7 +3125,7 @@ namespace geo
             // Check if file exists
             if (!fs::exists(p) || !fs::is_regular_file(p))
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Convert path to canonical
@@ -3136,7 +3136,7 @@ namespace geo
             if (fp == nullptr)
             {
                 cerr << "Unable top open " << path << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Load header from file
@@ -3149,7 +3149,7 @@ namespace geo
                 //         { cerr << path << " does not contain a valid header." << endl; });
 
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Header is valid
@@ -3178,7 +3178,7 @@ namespace geo
 
             // Check if the whole file was loaded
             // If not, discard partial loaded grid
-            if (status != status::SUCCESS || count < rows * columns)
+            if (status != geoStatus::SUCCESS || count < rows * columns)
             {
                 // ifDebug([&]
                 //         { cerr
@@ -3192,7 +3192,7 @@ namespace geo
                 // Dispose partially read data
                 free(data);
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Setup grid
@@ -3203,7 +3203,7 @@ namespace geo
 
             // Close file pointer
             fclose(fp);
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -3212,12 +3212,12 @@ namespace geo
          * @param path Path to the ESRI binary grid (.bil) file (only single-band bsq supported)
          * @return status status::SUCCESS if load was successful, status::FAILURE if load fails
          */
-        static status loadFloat(Grid &grid, const string &path)
+        static geoStatus loadFloat(Grid &grid, const string &path)
         {
 
             if (!path.length())
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             fs::path floatPath(path);
@@ -3226,7 +3226,7 @@ namespace geo
 
             if (!fs::exists(floatPath) || !fs::exists(headerPath))
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Make paths cannonical
@@ -3239,14 +3239,14 @@ namespace geo
 
             if (!headerSize || !dataSize)
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             FILE *fp = fopen(headerPath.string().c_str(), "rb");
             if (fp == nullptr)
             {
                 cerr << "Unable top open header " << path << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Load header from file
@@ -3257,7 +3257,7 @@ namespace geo
             {
                 cerr << path << " does not contain a valid header." << endl;
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Header is valid
@@ -3299,7 +3299,7 @@ namespace geo
                 // Dispose partially read data
                 free(data);
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             Grid::setup(GridFormat::ESRI_FLOAT, grid, data, rows, columns, x0, y0, dx, dy, dxDeg, dyDeg, noData);
@@ -3309,7 +3309,7 @@ namespace geo
 
             // Close file pointer
             fclose(fp);
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -3324,7 +3324,7 @@ namespace geo
          * @param dyDeg Y resolution (decimal degrees)
          * @param nodata value to be considered as NODATA
          */
-        static status saveAscii(
+        static geoStatus saveAscii(
             const char *path,
             const float *data,
             int rows,
@@ -3342,7 +3342,7 @@ namespace geo
                 // ifDebug([&]
                 //         { cerr << "Grid is empty, nothing to save" << endl; });
 
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             fs::path dataP(path);
@@ -3357,7 +3357,7 @@ namespace geo
             if (fp == NULL)
             {
                 cerr << "Unable to open file " << dataP.string().c_str() << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Write ASCII grid header
@@ -3386,7 +3386,7 @@ namespace geo
             fprintf(fp, "NODATA_value %7f\n", nodata);
 
             // Save rows in reverse order
-            status status = DataSet<float>::saveTextReverseBatches(fp, (size_t)0, data, count, columns);
+            geoStatus status = DataSet<float>::saveTextReverseBatches(fp, (size_t)0, data, count, columns);
 
             // ifDebug([&]
             //         { cout << endl
@@ -3398,7 +3398,7 @@ namespace geo
             saveWGS84Projection(dataP.string().c_str());
 
             // Return success even if projection file couldn't be created.
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -3406,7 +3406,7 @@ namespace geo
          * @param grid Grid
          * @param path Path to save the grid
          */
-        static status saveAscii(const Grid &grid, const string &path)
+        static geoStatus saveAscii(const Grid &grid, const string &path)
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
@@ -3431,7 +3431,7 @@ namespace geo
          * @param nodata NoData value
          * @return status status::SUCCESS if saving succeeded, status::FAILURE otherwise
          */
-        static status saveFloat(
+        static geoStatus saveFloat(
             const char *path,
             const float *data,
             int rows,
@@ -3451,7 +3451,7 @@ namespace geo
                     // ifDebug([&]
                     //         { cerr << "Grid is empty, nothing to save" << endl; });
 
-                    return status::FAILURE;
+                    return geoStatus::FAILURE;
                 }
 
             // Controls flush over the output byte stream
@@ -3473,7 +3473,7 @@ namespace geo
             if (fp == NULL)
             {
                 cerr << "Unable to open file " << headerP.string().c_str() << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Ulx: center of the top left cell
@@ -3511,21 +3511,21 @@ namespace geo
                 //         { cerr << "Unable to open file " << dataP.string().c_str() << endl; });
 
                 fs::remove(headerP);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Write binary data in reverse order
-            status status = DataSet<float>::saveBinaryReverse(fp, 0, data, count, columns);
+            geoStatus status = DataSet<float>::saveBinaryReverse(fp, 0, data, count, columns);
 
             fclose(fp);
 
             // if (writeFailed)
-            if (status != status::SUCCESS)
+            if (status != geoStatus::SUCCESS)
             {
                 // Raw data writing failed, remove header file
                 fs::remove(headerP);
                 fs::remove(dataP);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // ifDebug([&]
@@ -3536,7 +3536,7 @@ namespace geo
             saveWGS84Projection(path);
 
             // Return success even if projection file couldn't be created.
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -3544,7 +3544,7 @@ namespace geo
          * @param grid Grid
          * @param path Path to save the grid
          */
-        static status saveFloat(const Grid &grid, const string &path)
+        static geoStatus saveFloat(const Grid &grid, const string &path)
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
@@ -3813,12 +3813,12 @@ namespace geo
          * @param path Path to the binary file (extension is optional)
          * @return status
          */
-        static status loadBinary(Grid &grid, const string &path)
+        static geoStatus loadBinary(Grid &grid, const string &path)
         {
 
             if (!path.length())
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             fs::path floatPath(path);
@@ -3827,7 +3827,7 @@ namespace geo
 
             if (!fs::exists(floatPath) || !fs::exists(headerPath))
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Make paths cannonical
@@ -3840,14 +3840,14 @@ namespace geo
 
             if (!headerSize || !dataSize)
             {
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             FILE *fp = fopen(headerPath.string().c_str(), "r");
             if (fp == nullptr)
             {
                 cerr << "Unable top open header " << headerPath.string() << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Load header from file
@@ -3860,7 +3860,7 @@ namespace geo
                 //         { cerr << path << " does not contain a valid ENVI ASCII header." << endl; });
 
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Get parameters from the ENVI header
@@ -3903,7 +3903,7 @@ namespace geo
                     // Dispose partially read data
                     free(data);
                     fclose(fp);
-                    return status::FAILURE;
+                    return geoStatus::FAILURE;
                 }
 
                 // Assign data
@@ -3913,7 +3913,7 @@ namespace geo
 
                 // Close file pointer
                 fclose(fp);
-                return status::SUCCESS;
+                return geoStatus::SUCCESS;
             }
             else if (dataType == 5)
             {
@@ -3932,7 +3932,7 @@ namespace geo
                     // Dispose partial read data
                     free(doubleData);
                     fclose(fp);
-                    return status::FAILURE;
+                    return geoStatus::FAILURE;
                 }
 
                 // A new float array needs to be allocated and double data needs to be copied to float array
@@ -3940,7 +3940,7 @@ namespace geo
                 if (data == nullptr)
                 {
                     free(doubleData);
-                    return status::FAILURE;
+                    return geoStatus::FAILURE;
                 }
                 // Copy double data to float data
                 for (size_t i = 0; i < sz; i++)
@@ -3957,10 +3957,10 @@ namespace geo
                 // ENVI stores last row at the top, rows need to be reversed.
                 grid.reverseRows();
 
-                return status::SUCCESS;
+                return geoStatus::SUCCESS;
             }
 
-            return status::FAILURE;
+            return geoStatus::FAILURE;
         }
 
         /**
@@ -3976,7 +3976,7 @@ namespace geo
          * @param nodata NoData value
          * @return status status::SUCCESS if saving succeeded, status::FAILURE otherwise
          */
-        static status saveFloat(
+        static geoStatus saveFloat(
             const char *path,
             const float *data,
             int rows,
@@ -3995,7 +3995,7 @@ namespace geo
                 // ifDebug([&]
                 //         { cerr << "Grid is empty, nothing to save" << endl; });
 
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Header ASCII file (.hdr extension)
@@ -4015,7 +4015,7 @@ namespace geo
             if (fp == NULL)
             {
                 cerr << "Unable to open file " << headerP.string().c_str() << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Top of the last cell
@@ -4055,21 +4055,21 @@ namespace geo
                 // Error! remove header file
                 cerr << "Unable to open file " << dataP.string().c_str() << endl;
                 fs::remove(headerP);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Write binary data in reverse order
-            status status = DataSet<float>::saveBinaryReverse(fp, 0, data, count, columns);
+            geoStatus status = DataSet<float>::saveBinaryReverse(fp, 0, data, count, columns);
 
             fclose(fp);
 
             // if (writeFailed)
-            if (status != status::SUCCESS)
+            if (status != geoStatus::SUCCESS)
             {
                 // Raw data writing failed, remove header file
                 fs::remove(headerP);
                 fs::remove(dataP);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // ifDebug([&]
@@ -4079,7 +4079,7 @@ namespace geo
             saveWGS84Projection(path);
 
             // Return success even if projection file couldn't be created.
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -4095,7 +4095,7 @@ namespace geo
          * @param nodata NoData value
          * @return status status::SUCCESS if saving succeeded, status::FAILURE otherwise
          */
-        static status saveDouble(
+        static geoStatus saveDouble(
             const char *path,
             const float *data,
             int rows,
@@ -4114,7 +4114,7 @@ namespace geo
                 // ifDebug([&]
                 //         { cerr << "Grid is empty, nothing to save" << endl; });
 
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Header ASCII file (.hdr extension)
@@ -4134,7 +4134,7 @@ namespace geo
             if (fp == NULL)
             {
                 cerr << "Unable to open file " << headerP.string().c_str() << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Top of the last cell
@@ -4174,21 +4174,21 @@ namespace geo
                 // Error! remove header file
                 cerr << "Unable to open file " << dataP.string().c_str() << endl;
                 fs::remove(headerP);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Write binary data in reverse order
-            status status = DataSet<float>::saveBinaryReverse(fp, 0, data, count, columns);
+            geoStatus status = DataSet<float>::saveBinaryReverse(fp, 0, data, count, columns);
 
             fclose(fp);
 
             // if (writeFailed)
-            if (status != status::SUCCESS)
+            if (status != geoStatus::SUCCESS)
             {
                 // Raw data writing failed, remove header file
                 fs::remove(headerP);
                 fs::remove(dataP);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // ifDebug([&]
@@ -4198,7 +4198,7 @@ namespace geo
             saveWGS84Projection(path);
 
             // Return success even if projection file couldn't be created.
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -4206,7 +4206,7 @@ namespace geo
          * @param grid Grid
          * @param path Path to save the grid
          */
-        static status saveFloat(const Grid &grid, const string &path)
+        static geoStatus saveFloat(const Grid &grid, const string &path)
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
@@ -4223,7 +4223,7 @@ namespace geo
          * @param grid Grid
          * @param path Path to save the grid
          */
-        static status saveDouble(const Grid &grid, const string &path)
+        static geoStatus saveDouble(const Grid &grid, const string &path)
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
@@ -4658,7 +4658,7 @@ namespace geo
          * @param path Path to the Surfer 6/7 (.grd) file (ascii or binary)
          * @return status status::SUCCESS if load was successful, status::FAILURE if load fails
          */
-        static status load(Grid &grid, const string &path)
+        static geoStatus load(Grid &grid, const string &path)
         {
 
             fs::path p(path);
@@ -4669,7 +4669,7 @@ namespace geo
             if (!fs::exists(p) || !fs::is_regular_file(p))
             {
                 cerr << "Surfer grid " << p.string() << " not found." << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Convert path to canonical
@@ -4681,7 +4681,7 @@ namespace geo
             if (fp == nullptr)
             {
                 cerr << "Unable top open " << path << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Load Surfer header from file
@@ -4692,7 +4692,7 @@ namespace geo
             {
                 cerr << path << " does not contain a valid header." << endl;
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Header is valid
@@ -4762,7 +4762,7 @@ namespace geo
                 {
                     cerr << "Unable to read double data" << endl;
                     fclose(fp);
-                    return status::FAILURE;
+                    return geoStatus::FAILURE;
                 }
 
                 format = GridFormat::SURFER_DOUBLE;
@@ -4772,7 +4772,7 @@ namespace geo
                 // ifDebug([&]
                 //         { cerr << "Unknown surfer grid type" << endl; });
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Check if the whole file was loaded
@@ -4793,7 +4793,7 @@ namespace geo
                     free(gridData);
                 }
                 fclose(fp);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Close file pointer
@@ -4801,7 +4801,7 @@ namespace geo
 
             Grid::setup(format, grid, gridData, rows, columns, x0, y0, dx, dy, dxDeg, dyDeg, noData);
 
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -4817,7 +4817,7 @@ namespace geo
          * @param fileType Type of output grid, default Surfer 6 float
          * @return status status::SUCCESS if saving succeeded, status::FAILURE otherwise
          */
-        static status
+        static geoStatus
         save(
             const char *path,
             const float *data,
@@ -4837,7 +4837,7 @@ namespace geo
                 // ifDebug([&]
                 //         { cerr << "Grid is empty, nothing to save" << endl; });
 
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             fs::path dataP(path);
@@ -4863,7 +4863,7 @@ namespace geo
             if (fp == NULL)
             {
                 cerr << "Unable to open file " << dataP.string().c_str() << endl;
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // calculate zMin, zMax
@@ -4993,7 +4993,7 @@ namespace geo
 
             int lastPercent = -1;
 
-            status status;
+            geoStatus status;
 
             if (fileType == fileType::TEXT)
             {
@@ -5018,7 +5018,7 @@ namespace geo
 
                     // Write the double array
                     status = DataSet<double>::saveBinary(fp, 0, doubleData, columns, columns);
-                    if (status != status::SUCCESS)
+                    if (status != geoStatus::SUCCESS)
                     {
                         break;
                     }
@@ -5038,17 +5038,17 @@ namespace geo
             // ifDebug([&]
             //         { cout << "Written " << dataP.string() << endl; });
 
-            if (status != status::SUCCESS)
+            if (status != geoStatus::SUCCESS)
             {
                 fs::remove(dataP);
-                return status::FAILURE;
+                return geoStatus::FAILURE;
             }
 
             // Save projection file
             saveWGS84Projection(dataP.string().c_str());
 
             // Return success even if projection file couldn't be created.
-            return status::SUCCESS;
+            return geoStatus::SUCCESS;
         }
 
         /**
@@ -5058,7 +5058,7 @@ namespace geo
          * @param fileType Output grid file type
          * @return operation status
          */
-        static status save(const Grid &grid, const string &path, fileType fileType = fileType::FLOAT)
+        static geoStatus save(const Grid &grid, const string &path, fileType fileType = fileType::FLOAT)
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
@@ -5173,7 +5173,7 @@ namespace geo
      * @param path File path
      * @return status status::SUCCESS if grid was loaded, status::FAILURE if loading failed.
      */
-    static inline status LoadGrid(Grid &grid, const string &path)
+    static inline geoStatus LoadGrid(Grid &grid, const string &path)
     {
 
         fs::path filePath(path);
@@ -5196,7 +5196,7 @@ namespace geo
         {
             return Surfer::load(grid, path);
         }
-        return status::FAILURE;
+        return geoStatus::FAILURE;
     }
 
     /**
@@ -5206,7 +5206,7 @@ namespace geo
      * @param format Grid format
      * @return status status::SUCCESS if grid was loaded, status::FAILURE if loading failed.
      */
-    static inline status LoadGrid(Grid &grid, const string &path, const GridFormat format)
+    static inline geoStatus LoadGrid(Grid &grid, const string &path, const GridFormat format)
     {
         if (format == GridFormat::ESRI_ASCII)
         {
@@ -5224,7 +5224,7 @@ namespace geo
         {
             return Surfer::load(grid, path);
         }
-        return status::FAILURE;
+        return geoStatus::FAILURE;
     }
 
     /**
@@ -5235,7 +5235,7 @@ namespace geo
      * @param format Grid format
      * @return status status::SUCCESS if saving succeeds, status::FAILURE otherwise
      */
-    static inline status SaveGrid(const Grid &grid, const string &path, const GridFormat format)
+    static inline geoStatus SaveGrid(const Grid &grid, const string &path, const GridFormat format)
     {
         if (format == GridFormat::ESRI_ASCII)
         {
@@ -5277,7 +5277,7 @@ namespace geo
                 return grid.saveText(path.c_str(), true);
             }
         }
-        return status::FAILURE;
+        return geoStatus::FAILURE;
     }
 }
 

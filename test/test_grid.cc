@@ -18,7 +18,7 @@ using std::endl;
 
 using geo::Grid;
 using geo::GridFormat;
-using geo::status;
+using geo::geoStatus;
 
 /**
  * @brief Create a Sequential Grid object. grid[i] = 0, grid[1] = 1 and so on
@@ -53,7 +53,7 @@ Grid createTestGrid();
  *
  * @return status
  */
-status createGridFolder();
+geoStatus createGridFolder();
 
 // Grid creation
 TEST(GridTest, CreatingGrid)
@@ -69,7 +69,7 @@ TEST(GridTest, CreatingGrid)
 // Save grid to Esri ASCII
 TEST(GridTest, SaveEsriAscii)
 {
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -86,14 +86,14 @@ TEST(GridTest, SaveEsriAscii)
   status = geo::Esri::saveAscii(grid, (currentPath / "esri.asc").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Save grid to Esri Float
 TEST(GridTest, SaveEsriFloat)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -110,14 +110,14 @@ TEST(GridTest, SaveEsriFloat)
   status = geo::Esri::saveFloat(grid, (currentPath / "esriFloat.bil").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Save grid to Envi Float
 TEST(GridTest, SaveEnviFloat)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -138,7 +138,7 @@ TEST(GridTest, SaveEnviFloat)
 TEST(GridTest, SaveEnviDouble)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -155,14 +155,14 @@ TEST(GridTest, SaveEnviDouble)
   status = geo::Envi::saveFloat(grid, (currentPath / "enviDouble.flt").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Save grid to Surfer ASCII
 TEST(GridTest, SaveSurferAscii)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -179,14 +179,14 @@ TEST(GridTest, SaveSurferAscii)
   status = geo::Surfer::save(grid, (currentPath / "surferAscii.grd").string(), geo::Surfer::fileType::TEXT);
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Save grid to Surfer 6 float
 TEST(GridTest, SaveSurferFloat)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -203,14 +203,14 @@ TEST(GridTest, SaveSurferFloat)
   status = geo::Surfer::save(grid, (currentPath / "surfer6.grd").string(), geo::Surfer::fileType::FLOAT);
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Save grid to Surfer 7 float
 TEST(GridTest, SaveSurferDouble)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -227,14 +227,14 @@ TEST(GridTest, SaveSurferDouble)
   status = geo::Surfer::save(grid, (currentPath / "surfer7.grd").string(), geo::Surfer::fileType::DOUBLE);
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Save grid to TXT
 TEST(GridTest, SaveTxt)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -251,14 +251,14 @@ TEST(GridTest, SaveTxt)
   status = geo::SaveGrid(grid, (currentPath / "grid.txt").string(), GridFormat::TEXT);
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Save grid to TXT reversed rows
 TEST(GridTest, SaveTxtReverse)
 {
 
-  status status;
+  geoStatus status;
 
   // Create grid folder
   createGridFolder();
@@ -275,14 +275,14 @@ TEST(GridTest, SaveTxtReverse)
   status = geo::SaveGrid(grid, (currentPath / "gridrReverse.txt").string(), GridFormat::TEXT_REVERSE);
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Load Esri ASCII
 TEST(GridTest, LoadEsriAscii)
 {
   Grid grid;
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -294,7 +294,7 @@ TEST(GridTest, LoadEsriAscii)
   status = geo::Esri::loadAscii(grid, (currentPath / "esri.asc").string());
 
   // Status must be true, grid loaded successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 
   // Check if grid is sequential
   EXPECT_EQ(isSequentialGrid(grid), true);
@@ -304,7 +304,7 @@ TEST(GridTest, LoadEsriAscii)
 TEST(GridTest, LoadEsriFloat)
 {
   Grid grid;
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -316,7 +316,7 @@ TEST(GridTest, LoadEsriFloat)
   status = geo::Esri::loadFloat(grid, (currentPath / "esriFloat.bil").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 
   // Check if grid is sequential
   EXPECT_EQ(isSequentialGrid(grid), true);
@@ -326,7 +326,7 @@ TEST(GridTest, LoadEsriFloat)
 TEST(GridTest, LoadEnviFloat)
 {
   Grid grid;
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -338,7 +338,7 @@ TEST(GridTest, LoadEnviFloat)
   status = geo::Envi::loadBinary(grid, (currentPath / "enviFloat.flt").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 
   // Check if grid is sequential
   EXPECT_EQ(isSequentialGrid(grid), true);
@@ -348,7 +348,7 @@ TEST(GridTest, LoadEnviFloat)
 TEST(GridTest, LoadEnviDouble)
 {
   Grid grid;
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -360,7 +360,7 @@ TEST(GridTest, LoadEnviDouble)
   status = geo::Envi::loadBinary(grid, (currentPath / "enviDouble.flt").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 
   // Check if grid is sequential
   EXPECT_EQ(isSequentialGrid(grid), true);
@@ -370,7 +370,7 @@ TEST(GridTest, LoadEnviDouble)
 TEST(GridTest, LoadSurferAscii)
 {
   Grid grid;
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -382,14 +382,14 @@ TEST(GridTest, LoadSurferAscii)
   status = geo::Surfer::load(grid, (currentPath / "surferAscii.grd").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Load Surfer 6 Float
 TEST(GridTest, LoadSurferFloat)
 {
   Grid grid;
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -401,7 +401,7 @@ TEST(GridTest, LoadSurferFloat)
   status = geo::Surfer::load(grid, (currentPath / "surfer6.grd").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 
   // Check if grid is sequential
   EXPECT_EQ(isSequentialGrid(grid), true);
@@ -411,7 +411,7 @@ TEST(GridTest, LoadSurferFloat)
 TEST(GridTest, LoadSurferDouble)
 {
   Grid grid;
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -426,7 +426,7 @@ TEST(GridTest, LoadSurferDouble)
   status = geo::Surfer::load(grid, (currentPath / "surfer7.grd").string());
 
   // Status must be true, grid saved successfully.
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 
   // Check if grid is sequential
   EXPECT_EQ(isSequentialGrid(grid), true);
@@ -501,7 +501,7 @@ Grid createTestGrid()
   return grid;
 }
 
-status createGridFolder()
+geoStatus createGridFolder()
 {
   // create "grids/" folder
   fs::path currentPath(fs::current_path() / "grids");
@@ -509,8 +509,8 @@ status createGridFolder()
   // Fail and stop if the output directory could not be created
   if (fs::create_directories(currentPath))
   {
-    return status::SUCCESS;
+    return geoStatus::SUCCESS;
   }
 
-  return status::FAILURE;
+  return geoStatus::FAILURE;
 }

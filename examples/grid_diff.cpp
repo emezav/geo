@@ -22,7 +22,7 @@ using geo::Grid;
 using geo::Options;
 using geo::GridFormat;
 using geo::Strings;
-using geo::status;
+using geo::geoStatus;
 
 /**
  * @brief Prints program usage
@@ -57,9 +57,9 @@ int main(int argc, char *argv[])
   Grid gridA, gridB;
 
   // Load first grid
-  status status = geo::LoadGrid(gridA, pathA);
+  geoStatus status = geo::LoadGrid(gridA, pathA);
 
-  if (status != status::SUCCESS) {
+  if (status != geoStatus::SUCCESS) {
     cerr << "Unable to load the first grid";
     exit(EXIT_FAILURE);
   }
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   // Load second grid
   status = geo::LoadGrid(gridB, pathB);
 
-  if (status != status::SUCCESS) {
+  if (status != geoStatus::SUCCESS) {
     cerr << "Unable to load the second grid";
     exit(EXIT_FAILURE);
   }

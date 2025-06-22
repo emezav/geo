@@ -36,7 +36,7 @@ TEST(DataSetTest, SavingDataSets)
   int lineSize = 500;
 
   float * data = createSequentialData(n);
-  geo::status status;
+  geo::geoStatus status;
 
   // Use "data/" folder
   fs::path currentPath(fs::current_path() / "data");
@@ -49,7 +49,7 @@ TEST(DataSetTest, SavingDataSets)
 
   status = FloatDataSet::saveText(strPath, data, n, lineSize);
 
-  EXPECT_EQ(status, geo::status::SUCCESS);
+  EXPECT_EQ(status, geo::geoStatus::SUCCESS);
 }
 
 // Loading datasets from disk

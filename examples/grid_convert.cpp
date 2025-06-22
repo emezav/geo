@@ -22,7 +22,7 @@ using geo::Grid;
 using geo::Options;
 using geo::GridFormat;
 using geo::Strings;
-using geo::status;
+using geo::geoStatus;
 
 
 /**
@@ -90,9 +90,9 @@ int main(int argc, char *argv[])
   Grid grid;
 
   // Load input grid
-  status status = geo::LoadGrid(grid, inputFile, iFormat);
+  geoStatus status = geo::LoadGrid(grid, inputFile, iFormat);
 
-  if (status != status::SUCCESS) {
+  if (status != geoStatus::SUCCESS) {
     cerr << "Unable to load input grid";
     exit(EXIT_FAILURE);
   }
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
   // Save output grid
   status = geo::SaveGrid(grid, outputFile, oFormat);
 
-  if (status != status::SUCCESS) {
+  if (status != geoStatus::SUCCESS) {
     cerr << "Unable to create output grid " << outputFile << endl;
   }
 
