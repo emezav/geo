@@ -709,8 +709,8 @@ namespace geo
         {"surferascii", GridFormat::SURFER_ASCII},
         {"surfer6", GridFormat::SURFER_FLOAT},
         {"surfer7", GridFormat::SURFER_DOUBLE},
-        {"txt", GridFormat::TEXT},
-        {"txtreverse", GridFormat::TEXT_REVERSE}};
+        {"txtfrf", GridFormat::TEXT},
+        {"txtlrf", GridFormat::TEXT_REVERSE}};
 
     /**
      * @brief Get the format from a string
@@ -2398,7 +2398,16 @@ namespace geo
             return this->data[(row * columns) + column];
         }
 
-        float equalsAt(const Grid &rhs, int row, int column, float rpe = 1.0f) const
+        /**
+         * @brief Checks if two grid values match
+         *
+         * @param rhs Other grid
+         * @param row row on the other grid
+         * @param column column on the other grid
+         * @param rpe Relative percent error
+         * @return bool True if relative difference is less than rpe, false otherwise.
+         */
+        bool equalsAt(const Grid &rhs, int row, int column, float rpe = 1.0f) const
         {
             const float valueA = (*this)(row, column);
             const float valueB = rhs(row, column);
