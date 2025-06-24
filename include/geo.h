@@ -5300,6 +5300,64 @@ namespace geo
         }
         return geoStatus::FAILURE;
     }
+
+    /**
+     * @brief Saves grid data to a file
+     *
+     * @param path Path to the file
+     * @param data Pointer to grid data
+     * @param rows Count of rows
+     * @param columns Count of columns
+     * @param x0 Longitude of the lower corner of the grid
+     * @param y0 Latitude of the lower corner of the grid
+     * @param dxDeg Grid X resolution in decimal degrees
+     * @param dyDeg Grid Y resolution in decimal degres
+     * @param noData NoData value
+     * @return geoStatus SUCCESS if saving is successful, FAILURE otherwise.
+     */
+    static inline geoStatus saveGrid(
+        const char *path,
+        const float *data,
+        int rows,
+        int columns,
+        double x0,
+        double y0,
+        double dxDeg,
+        double dyDeg,
+        double noData = NAN)
+    {
+        fs::path filePath(path);
+
+        string fileExt = filePath.extension().string();
+
+        string ext = Strings::tolower(fileExt);
+
+        if (ext.compare(".asc") == 0)
+        {
+            return Esri::saveAscii(path, data, rows, columns, x0, y0, dxDeg, dyDeg, noData);
+        }
+        else if (ext.compare(".bil") == 0)
+        {
+            return Esri::saveFloat(path, data, rows, columns, x0, y0, dxDeg, dyDeg, noData);
+        }
+        else if (ext.compare(".flt") == 0)
+        {
+            // Prefer Envi float
+            return Envi::saveFloat(path, data, rows, columns, x0, y0, dxDeg, dyDeg, noData);
+        }
+        else if (ext.compare(".grd") == 0)
+        {
+            // Prefer Surfer 6 (float) binary
+            return Surfer::save(path, data, rows, columns, x0, y0, dxDeg, dyDeg, geo::Surfer::fileType::FLOAT);
+        }
+        else if (ext.compare(".txt"))
+        {
+            // Prefer save text with rows in reverse order
+            return DataSet<float>::saveTextReverseBatches(string(path), data, rows * columns, columns);
+        }
+
+        return geoStatus::FAILURE;
+    }
 }
 
 #endif
