@@ -1524,16 +1524,16 @@ namespace geo
 
                 size_t readItems = fread(binaryData, sizeof(T), binaryItems, fp);
 
-                T* oldData = binaryData;
+                T *oldData = binaryData;
 
                 binaryData = (T *)realloc(binaryData, readItems * sizeof(T));
 
                 if (binaryData == nullptr)
                 {
                     free(oldData);
-                    return { geoStatus::FAILURE, 0, nullptr };
+                    return {geoStatus::FAILURE, 0, nullptr};
                 }
-                return { geoStatus::SUCCESS, readItems, binaryData };
+                return {geoStatus::SUCCESS, readItems, binaryData};
             }
 
             return {geoStatus::FAILURE, 0, nullptr};
@@ -1706,7 +1706,7 @@ namespace geo
                 size_t realSize = (char *)currentItem - startData;
                 // Resize to real contents
                 // Reallocate memory to fit exactly realSize + 1 sentinel item filled with zeroes
-                char* oldData = startData;
+                char *oldData = startData;
                 startData = (char *)realloc(startData, realSize + typeSize);
 
                 if (startData == NULL)
@@ -2356,12 +2356,21 @@ namespace geo
         }
 
         /**
-         * @brief Returns the resolution of the grid
+         * @brief Returns the resolution of the grid in decimal degrees
          * @return {dx in degrees, dy in degrees}
          */
-        std::tuple<double, double> resolution() const
+        std::tuple<double, double> resolutionDegrees() const
         {
             return {this->dxDeg, this->dyDeg};
+        }
+
+        /**
+         * @brief Returns the resolution of the grid in meters
+         * @return {dx in degrees, dy in degrees}
+         */
+        std::tuple<double, double> resolutionMeters() const
+        {
+            return {this->dx, this->dy};
         }
 
         /**
@@ -2699,7 +2708,7 @@ namespace geo
                 if (rhs.data != nullptr)
                 {
                     // Copy data from rhs
-                    this->data = (float*)malloc(numElements * sizeof(float));
+                    this->data = (float *)malloc(numElements * sizeof(float));
                     std::copy(rhs.data, rhs.data + numElements, this->data);
                 }
             }
@@ -3427,7 +3436,7 @@ namespace geo
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
-            auto [dxDeg, dyDeg] = grid.resolution();
+            auto [dxDeg, dyDeg] = grid.resolutionDegrees();
             auto [rows, columns] = grid.dimensions();
             auto noData = grid.noDataValue();
             auto data = grid.c_float();
@@ -3565,7 +3574,7 @@ namespace geo
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
-            auto [dxDeg, dyDeg] = grid.resolution();
+            auto [dxDeg, dyDeg] = grid.resolutionDegrees();
             auto [rows, columns] = grid.dimensions();
             auto noData = grid.noDataValue();
             auto data = grid.c_float();
@@ -4227,7 +4236,7 @@ namespace geo
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
-            auto [dxDeg, dyDeg] = grid.resolution();
+            auto [dxDeg, dyDeg] = grid.resolutionDegrees();
             auto [rows, columns] = grid.dimensions();
             auto noData = grid.noDataValue();
             auto data = grid.c_float();
@@ -4244,7 +4253,7 @@ namespace geo
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
-            auto [dxDeg, dyDeg] = grid.resolution();
+            auto [dxDeg, dyDeg] = grid.resolutionDegrees();
             auto [rows, columns] = grid.dimensions();
             auto noData = grid.noDataValue();
             auto data = grid.c_float();
@@ -5003,7 +5012,7 @@ namespace geo
 
             // Save actual data
 
-            geoStatus status{ geoStatus::FAILURE };
+            geoStatus status{geoStatus::FAILURE};
 
             if (fileType == fileType::TEXT)
             {
@@ -5015,7 +5024,8 @@ namespace geo
 
                 // Create a buffer of double values
                 double *doubleData = (double *)malloc(columns * sizeof(double));
-                if (doubleData != NULL) {
+                if (doubleData != NULL)
+                {
                     for (int i = 0; i < rows; i++)
                     {
                         // Save one float row into the double array
@@ -5071,7 +5081,7 @@ namespace geo
         {
 
             auto [x0, y0, xMax, yMax] = grid.extents();
-            auto [dxDeg, dyDeg] = grid.resolution();
+            auto [dxDeg, dyDeg] = grid.resolutionDegrees();
             auto [rows, columns] = grid.dimensions();
             auto noData = grid.noDataValue();
             auto data = grid.c_float();
