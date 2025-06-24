@@ -1524,14 +1524,18 @@ namespace geo
 
                 size_t readItems = fread(binaryData, sizeof(T), binaryItems, fp);
 
+                T* oldData = binaryData;
+
                 binaryData = (T *)realloc(binaryData, readItems * sizeof(T));
 
-                if (binaryData != nullptr)
+                if (binaryData == nullptr)
                 {
-
-                    return {geoStatus::SUCCESS, readItems, binaryData};
+                    free(oldData);
+                    return { geoStatus::FAILURE, 0, nullptr };
                 }
+                return { geoStatus::SUCCESS, readItems, binaryData };
             }
+
             return {geoStatus::FAILURE, 0, nullptr};
         }
 
@@ -1702,10 +1706,12 @@ namespace geo
                 size_t realSize = (char *)currentItem - startData;
                 // Resize to real contents
                 // Reallocate memory to fit exactly realSize + 1 sentinel item filled with zeroes
+                char* oldData = startData;
                 startData = (char *)realloc(startData, realSize + typeSize);
 
                 if (startData == NULL)
                 {
+                    free(oldData);
                     return {geoStatus::FAILURE, 0, nullptr};
                 }
                 else
@@ -1798,7 +1804,7 @@ namespace geo
             data[fileSize + 1] = 0;
 
             // Read file chunks into memory: 16 pages each time
-            size_t bufSize = 16 * pageSize;
+            size_t bufSize = static_cast<size_t>(16 * pageSize);
 
             char *buf = data;
 
@@ -2246,7 +2252,7 @@ namespace geo
          *
          * @param rhs Instance to be moved into this instance
          */
-        Grid(Grid &&rhs)
+        Grid(Grid &&rhs) noexcept
         {
             moveFrom(rhs);
         }
@@ -2257,7 +2263,7 @@ namespace geo
          * @param rhs Instance do be moved into this instance
          * @return Grid& This grid after moving
          */
-        Grid &operator=(Grid &&rhs)
+        Grid &operator=(Grid &&rhs) noexcept
         {
             if (this != &rhs)
             {
@@ -2686,15 +2692,15 @@ namespace geo
                 return;
             }
 
-            size_t memSize = this->rows * this->columns * sizeof(float);
-            if (memSize > 0)
+            size_t numElements = this->rows * this->columns;
+            if (numElements > 0)
             {
 
                 if (rhs.data != nullptr)
                 {
                     // Copy data from rhs
-                    this->data = (float *)malloc(memSize);
-                    std::copy(rhs.data, rhs.data + memSize, this->data);
+                    this->data = (float*)malloc(numElements * sizeof(float));
+                    std::copy(rhs.data, rhs.data + numElements, this->data);
                 }
             }
         }
@@ -4997,7 +5003,7 @@ namespace geo
 
             // Save actual data
 
-            geoStatus status;
+            geoStatus status{ geoStatus::FAILURE };
 
             if (fileType == fileType::TEXT)
             {
@@ -5009,22 +5015,24 @@ namespace geo
 
                 // Create a buffer of double values
                 double *doubleData = (double *)malloc(columns * sizeof(double));
-                for (int i = 0; i < rows; i++)
-                {
-                    // Save one float row into the double array
-                    for (int j = 0; j < columns; j++)
+                if (doubleData != NULL) {
+                    for (int i = 0; i < rows; i++)
                     {
-                        int pos = (i * columns) + j;
-                        // Get value as double
-                        double v = data[pos];
-                        doubleData[j] = v;
-                    }
+                        // Save one float row into the double array
+                        for (int j = 0; j < columns; j++)
+                        {
+                            int pos = (i * columns) + j;
+                            // Get value as double
+                            double v = data[pos];
+                            doubleData[j] = v;
+                        }
 
-                    // Write the double array
-                    status = DataSet<double>::saveBinary(fp, 0, doubleData, columns, columns);
-                    if (status != geoStatus::SUCCESS)
-                    {
-                        break;
+                        // Write the double array
+                        status = DataSet<double>::saveBinary(fp, 0, doubleData, columns, columns);
+                        if (status != geoStatus::SUCCESS)
+                        {
+                            break;
+                        }
                     }
                 }
 
