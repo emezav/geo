@@ -2630,6 +2630,29 @@ namespace geo
             }
         }
 
+        /**
+         * @brief Dispose this instance data
+         *
+         */
+        void dispose()
+        {
+
+            if (this->data != nullptr)
+            {
+                free(this->data);
+            }
+            // Initialize all parameters
+            this->rows = 0;
+            this->columns = 0;
+            this->x0 = 0.0f;
+            this->y0 = 0.0f;
+            this->dx = 0.0f;
+            this->dy = 0.0f;
+            this->dxDeg = 0.0f;
+            this->dyDeg = 0.0f;
+            this->data = nullptr;
+        }
+
     private:
         float *data{nullptr}; /*!< Flat array of data (row1row2row3...), no padding between rows*/
         int rows{};           /*!< Grid rows */
@@ -2704,29 +2727,6 @@ namespace geo
             rhs.dxDeg = 0.0f;
             rhs.dyDeg = 0.0f;
             rhs.data = nullptr;
-        }
-
-        /**
-         * @brief Dispose this instance data
-         *
-         */
-        void dispose()
-        {
-
-            if (this->data != nullptr)
-            {
-                free(this->data);
-            }
-            // Initialize all parameters
-            this->rows = 0;
-            this->columns = 0;
-            this->x0 = 0.0f;
-            this->y0 = 0.0f;
-            this->dx = 0.0f;
-            this->dy = 0.0f;
-            this->dxDeg = 0.0f;
-            this->dyDeg = 0.0f;
-            this->data = nullptr;
         }
     }; // End class
 
