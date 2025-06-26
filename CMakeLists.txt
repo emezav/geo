@@ -70,6 +70,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Begin examples section
 
+# Example includes: global .h and .h inside examples/ folder
+file(GLOB example_includes "${CMAKE_SOURCE_DIR}/include/*.h" "${CMAKE_SOURCE_DIR}/examples/*.h")
+
 # Add example executables
 file(GLOB EXAMPLES "examples/*.cpp")
 
@@ -78,7 +81,7 @@ foreach(example ${EXAMPLES})
   # Get the filename without the extension
   get_filename_component(executable_name ${example} NAME_WE)
   # Add example executable
-  add_executable(${executable_name} ${example})
+  add_executable(${executable_name} ${example} ${example_includes})
 endforeach()
 
 # End project examples section

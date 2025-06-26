@@ -2315,6 +2315,7 @@ namespace geo
             grid.dyDeg = dyDeg;
             grid.data = data;
             grid.noData = noData;
+            grid.format = format;
 
             // Check if last position of data can be accessed.
             if (data != nullptr)
@@ -2389,6 +2390,15 @@ namespace geo
         double noDataValue() const
         {
             return this->noData;
+        }
+
+        /**
+         * @brief Returns the grid format
+         * @return grid format
+         */
+        GridFormat gridFormat()
+        {
+            return this->format;
         }
 
         /**
@@ -2603,10 +2613,13 @@ namespace geo
                 return geoStatus::FAILURE;
             }
 
+            this->format = GridFormat::TEXT;
+
             // Reverse rows if required
             if (reverseRows)
             {
                 this->reverseRows();
+                this->format = GridFormat::TEXT_REVERSE;
             }
 
             this->noData = noData;
@@ -2666,19 +2679,21 @@ namespace geo
             this->dxDeg = 0.0f;
             this->dyDeg = 0.0f;
             this->data = nullptr;
+            this->format = GridFormat::UNKNOWN;
         }
 
     private:
-        float *data{nullptr}; /*!< Flat array of data (row1row2row3...), no padding between rows*/
-        int rows{};           /*!< Grid rows */
-        int columns{};        /*!< Grid columns */
-        double x0{};          /*!< X coordinate (longitude, decimal degrees) of the lower left corner */
-        double y0{};          /*!< Y coordinate (latitude, decimal degrees) of the lower left corner */
-        double dx{};          /*!< X resolution in meters */
-        double dy{};          /*!< Y resolution in meters */
-        double dxDeg{};       /*!< X resolution in decimal degrees */
-        double dyDeg{};       /*!< Y resolution in decimal degrees */
-        float noData{NAN};    /*!< NoData value */
+        float *data{nullptr};                   /*!< Flat array of data (row1row2row3...), no padding between rows*/
+        int rows{};                             /*!< Grid rows */
+        int columns{};                          /*!< Grid columns */
+        double x0{};                            /*!< X coordinate (longitude, decimal degrees) of the lower left corner */
+        double y0{};                            /*!< Y coordinate (latitude, decimal degrees) of the lower left corner */
+        double dx{};                            /*!< X resolution in meters */
+        double dy{};                            /*!< Y resolution in meters */
+        double dxDeg{};                         /*!< X resolution in decimal degrees */
+        double dyDeg{};                         /*!< Y resolution in decimal degrees */
+        float noData{NAN};                      /*!< NoData value */
+        GridFormat format{GridFormat::UNKNOWN}; /*!< Grid format */
 
         /**
          * @brief Copies data from another instance
@@ -2695,6 +2710,8 @@ namespace geo
             this->dy = rhs.dy;
             this->dxDeg = rhs.dxDeg;
             this->dyDeg = rhs.dyDeg;
+            this->noData = rhs.noData;
+            this->format = rhs.format;
 
             if (this->rows * this->columns <= 0)
             {
@@ -2732,6 +2749,9 @@ namespace geo
             // Grab data pointer from rhs
             this->data = rhs.data;
 
+            this->noData = rhs.noData;
+            this->format = rhs.format;
+
             // Empty rhs
             rhs.rows = 0.0f;
             rhs.columns = 0.0f;
@@ -2742,6 +2762,8 @@ namespace geo
             rhs.dxDeg = 0.0f;
             rhs.dyDeg = 0.0f;
             rhs.data = nullptr;
+            rhs.noData = NAN;
+            rhs.format = GridFormat::UNKNOWN;
         }
     }; // End class
 
@@ -5186,6 +5208,279 @@ namespace geo
         }
     };
 
+    static inline bool mosaicLeft(
+        Grid &grid1,
+        Grid &grid2,
+        Grid &output)
+    {
+
+        float *dst = NULL;
+
+        // Get grid dimensions.
+        auto [g1Rows, g1Columns] = grid1.dimensions();
+
+        auto [g2Rows, g2Columns] = grid2.dimensions();
+
+        // Get xMin, yMin from the left grid
+        auto [xMin, yMin, xMax, yMax] = grid1.extents();
+
+        // Get resolution
+        auto [dxDeg, dyDeg] = grid1.resolutionDegrees();
+        auto [dxM, dyM] = grid1.resolutionMeters();
+
+        // Return if row count doesn't match
+        if (g1Rows != g2Rows)
+        {
+            return false;
+        }
+
+        // Resulting grid will have xMin moved to the left
+        xMin -= g2Columns * dxDeg;
+
+        if (xMin < -180.0)
+        {
+            xMin = 360.0f + xMin;
+        }
+
+        int totalRows = g1Rows;
+        int totalColumns = g1Columns + g2Columns;
+
+        size_t totalElements = static_cast<size_t>(totalRows) * static_cast<size_t>(totalColumns);
+
+        dst = (float *)malloc(totalElements * sizeof(float));
+        if (dst == NULL)
+        {
+            return false;
+        }
+
+        float noDataValue = grid1.noDataValue();
+
+        for (size_t i = 0; i < totalElements; i++)
+        {
+            dst[i] = noDataValue;
+        }
+
+        for (size_t i = 0; i < totalRows; i++)
+        {
+            // Copy grid 2 row data (columns 0 ... g1Columns)
+            for (size_t j = 0; j < g2Columns; j++)
+            {
+                int pos = geo::linear2D(i, j, totalColumns);
+                dst[pos] = grid2(i, j);
+            }
+
+            // Copy grid 1 row data (columns g1Columns ... g1Columns + g2Columns)
+            for (size_t j = 0; j < g1Columns; j++)
+            {
+                int pos = geo::linear2D(i, g2Columns + j, totalColumns);
+                dst[pos] = grid1(i, j);
+            }
+        }
+
+        Grid::setup(grid1.gridFormat(), output, dst, totalRows, totalColumns, xMin, yMin, dxM, dyM, dxDeg, dyDeg, grid1.noDataValue());
+
+        return true;
+    }
+
+    static inline bool mosaicRight(
+        Grid &grid1,
+        Grid &grid2,
+        Grid &output)
+    {
+
+        float *dst = NULL;
+
+        // Get grid dimensions.
+        auto [g1Rows, g1Columns] = grid1.dimensions();
+
+        auto [g2Rows, g2Columns] = grid2.dimensions();
+
+        // Get xMin, yMin from the first grid
+        auto [xMin, yMin, xMax, yMax] = grid1.extents();
+
+        // Get resolution
+        auto [dxDeg, dyDeg] = grid1.resolutionDegrees();
+        auto [dxM, dyM] = grid1.resolutionMeters();
+
+        // Return if row count doesn't match
+        if (g1Rows != g2Rows)
+        {
+            return false;
+        }
+
+        int totalRows = g1Rows;
+        int totalColumns = g1Columns + g2Columns;
+
+        size_t totalElements = static_cast<size_t>(totalRows) * static_cast<size_t>(totalColumns);
+
+        dst = (float *)malloc(totalElements * sizeof(float));
+        if (dst == NULL)
+        {
+            return false;
+        }
+
+        float noDataValue = grid1.noDataValue();
+
+        for (size_t i = 0; i < totalElements; i++)
+        {
+            dst[i] = noDataValue;
+        }
+
+        for (size_t i = 0; i < totalRows; i++)
+        {
+            // Copy grid 1 row data (columns 0 ... g1Columns)
+            for (size_t j = 0; j < g1Columns; j++)
+            {
+                int pos = geo::linear2D(i, j, totalColumns);
+                dst[pos] = grid1(i, j);
+            }
+
+            // Copy grid 2 row data (columns g1Columns ... g1Columns + g2Columns)
+            for (size_t j = 0; j < g2Columns; j++)
+            {
+                int pos = geo::linear2D(i, g1Columns + j, totalColumns);
+                dst[pos] = grid2(i, j);
+            }
+        }
+
+        // Resulting grid origin will be xMin, yMin from the first grid
+        Grid::setup(grid1.gridFormat(), output, dst, totalRows, totalColumns, xMin, yMin, dxM, dyM, dxDeg, dyDeg, grid1.noDataValue());
+
+        return true;
+    }
+
+    static inline bool mosaicTop(
+        Grid &grid1,
+        Grid &grid2,
+        Grid &output)
+    {
+
+        float *dst = NULL;
+
+        // Get grid dimensions.
+        auto [g1Rows, g1Columns] = grid1.dimensions();
+
+        auto [g2Rows, g2Columns] = grid2.dimensions();
+
+        // Get xMin, yMin from the left grid
+        auto [xMin, yMin, xMax, yMax] = grid1.extents();
+
+        // Get resolution
+        auto [dxDeg, dyDeg] = grid1.resolutionDegrees();
+        auto [dxM, dyM] = grid1.resolutionMeters();
+
+        // Return if column count doesn't match
+        if (g1Columns != g2Columns)
+        {
+            return false;
+        }
+
+        int totalRows = g1Rows + g2Rows;
+        int totalColumns = g1Columns;
+
+        size_t totalElements = static_cast<size_t>(totalRows) * static_cast<size_t>(totalColumns);
+
+        dst = (float *)malloc(totalElements * sizeof(float));
+        if (dst == NULL)
+        {
+            return false;
+        }
+
+        float noDataValue = grid1.noDataValue();
+
+        for (size_t i = 0; i < totalElements; i++)
+        {
+            dst[i] = noDataValue;
+        }
+
+        for (size_t j = 0; j < totalColumns; j++)
+        {
+            // Copy grid 1 row data (rows 0 ... g1Rows)
+            for (size_t i = 0; i < g1Rows; i++)
+            {
+                int pos = geo::linear2D(i, j, totalColumns);
+                dst[pos] = grid1(i, j);
+            }
+
+            // Copy grid 2 row data (columns g1Rows ... g1Rows + g2Rows - 1)
+            for (size_t i = 0; i < g2Rows; i++)
+            {
+                int pos = geo::linear2D(i + g1Rows, j, totalColumns);
+                dst[pos] = grid2(i, j);
+            }
+        }
+
+        Grid::setup(grid1.gridFormat(), output, dst, totalRows, totalColumns, xMin, yMin, dxM, dyM, dxDeg, dyDeg, grid1.noDataValue());
+
+        return true;
+    }
+
+    static inline bool mosaicBottom(
+        Grid &grid1,
+        Grid &grid2,
+        Grid &output)
+    {
+
+        float *dst = NULL;
+
+        // Get grid dimensions.
+        auto [g1Rows, g1Columns] = grid1.dimensions();
+
+        auto [g2Rows, g2Columns] = grid2.dimensions();
+
+        // Get xMin, yMin from the right grid
+        auto [xMin, yMin, xMax, yMax] = grid2.extents();
+
+        // Get resolution
+        auto [dxDeg, dyDeg] = grid1.resolutionDegrees();
+        auto [dxM, dyM] = grid1.resolutionMeters();
+
+        // Return if column count doesn't match
+        if (g1Columns != g2Columns)
+        {
+            return false;
+        }
+
+        int totalRows = g1Rows + g2Rows;
+        int totalColumns = g1Columns;
+
+        size_t totalElements = static_cast<size_t>(totalRows) * static_cast<size_t>(totalColumns);
+
+        dst = (float *)malloc(totalElements * sizeof(float));
+        if (dst == NULL)
+        {
+            return false;
+        }
+
+        float noDataValue = grid1.noDataValue();
+
+        for (size_t i = 0; i < totalElements; i++)
+        {
+            dst[i] = noDataValue;
+        }
+
+        for (size_t j = 0; j < totalColumns; j++)
+        {
+            // Copy grid 1 row data (rows g2Rows ... g2Rows + g1Rows - 1)
+            for (size_t i = 0; i < g1Rows; i++)
+            {
+                int pos = geo::linear2D(i + g2Rows, j, totalColumns);
+                dst[pos] = grid1(i, j);
+            }
+
+            // Copy grid 2 row data (rows 0 .. g2Rows )
+            for (size_t i = 0; i < g2Rows; i++)
+            {
+                int pos = geo::linear2D(i, j, totalColumns);
+                dst[pos] = grid2(i, j);
+            }
+        }
+
+        Grid::setup(grid1.gridFormat(), output, dst, totalRows, totalColumns, xMin, yMin, dxM, dyM, dxDeg, dyDeg, grid1.noDataValue());
+
+        return true;
+    }
+
     /**
      * @brief Loads a grid, guessing the format from the extension.
      * @param grid Target grid
@@ -5373,12 +5668,14 @@ namespace geo
         const float *data,
         int rows,
         int columns,
-        double noData = NAN
-        )
+        double noData = NAN)
     {
-        if (format == GridFormat::TEXT) {
+        if (format == GridFormat::TEXT)
+        {
             return DataSet<float>::saveText(string(path), data, rows * columns, columns);
-        }else if (format == GridFormat::TEXT_REVERSE) {
+        }
+        else if (format == GridFormat::TEXT_REVERSE)
+        {
             return DataSet<float>::saveTextReverseBatches(string(path), data, rows * columns, columns);
         }
         return geoStatus::FAILURE;
