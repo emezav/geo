@@ -2384,6 +2384,14 @@ namespace geo
         }
 
         /**
+         * @brief Set the no data value
+         * @param noData New no data value
+         */
+        void setNoData(float noData) {
+            this->noData = noData;
+        }
+
+        /**
          * @brief Returns noData value
          * @return This instance noData value
          */
