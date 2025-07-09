@@ -3424,8 +3424,9 @@ namespace geo
 
             // Check if cells are squared
             float percentDiff = (fabs((dxDeg - dyDeg) / dxDeg)) * 100.0f;
-            // If relative percent difference is greater than 0.1 percent, use dx, dy
-            if (percentDiff > 0.1f)
+            // If relative percent difference is greater than 0.000001 percent, use dx, dy
+            // Accuracy required by high resolution grids
+            if (percentDiff > 0.000001f)
             {
                 // Non-squared cells
                 // Use dx/dy if cell sizes are not square
