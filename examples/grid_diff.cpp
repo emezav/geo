@@ -35,8 +35,9 @@ void usage(char *program);
  * @param gridA first grid
  * @param gridB second grid
  * @param rpe Relative Percent Error (maximum allowed difference, percent)
+ * @param showAll Show all differences
  */
-void diff(const Grid & gridA, const Grid & gridB, float rpe=1.0f);
+void diff(const Grid & gridA, const Grid & gridB, float rpe=1.0f, bool showAll = false);
 
 int main(int argc, char *argv[])
 {
@@ -49,9 +50,15 @@ int main(int argc, char *argv[])
   string pathA(argv[1]);
   string pathB(argv[2]);
 
+  bool showAll = false;
+
   float rpe{1.0f};
   if (argc == 4) {
     rpe = std::strtof(argv[3], nullptr);
+  }
+
+  if (argc == 5 && string(argv[4]).compare("true") == 0) {
+    showAll = true;
   }
 
   Grid gridA, gridB;
@@ -72,7 +79,7 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  diff(gridA, gridB, rpe);
+  diff(gridA, gridB, rpe, showAll);
 
   exit(EXIT_SUCCESS);
 
@@ -82,15 +89,16 @@ void usage(char *program)
 {
   cerr
       << "Usage: "
-      << program << " gridA gridB [rpe(1-100), defaults to 1%]" << endl
+      << program << " gridA gridB [rpe(1-100) showAll]" << endl
       << " Compares two grids and prints differences: row,column,valueA,valueB" << endl
       << " rpe is desired Relative Percent Error, defaults to 1 percent." << endl
+      << " set showAll to true to show all diffs." << endl
       << " Grid format will be deduced from the file extension.";
 
     exit(EXIT_SUCCESS);
 }
 
-void diff(const Grid & gridA, const Grid & gridB, float rpe) {
+void diff(const Grid & gridA, const Grid & gridB, float rpe, bool showAll) {
 
   if (!gridA.equalDimensions(gridB)) {
     cout << "Dimensions are different." << endl;
@@ -103,14 +111,14 @@ void diff(const Grid & gridA, const Grid & gridB, float rpe) {
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < columns; j++) {
       if (!gridA.equalsAt(gridB, i, j, rpe)) {
-        if (count++ < 100) {
+        if (count++ < 100 || showAll) {
         cout << i << "," << j <<","<<gridA(i,j) << "," << gridB(i,j) << " Reverse row: " << rows - i << "," << j<< endl;
         }
       }
     }
   }
 
-  if (count > 100) {
+  if (count > 100 && !showAll) {
     cout << "..." << endl;
   }
 

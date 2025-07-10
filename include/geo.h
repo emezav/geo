@@ -920,9 +920,28 @@ namespace geo
 
         // Convert 1 arcsec to radians and multiply by the calculated distance
         double arcSecLon = radians(1.0f / 3600.0f) * ((a * cs) / powf(1.0 - e2 * sn2, 1.5f));
-        double arcSecLat = radians(1.0f / 3600.0f) * ((a * (1 - e2)) / powf(1.0 - e2 * sn2, 1.5f));
+        double arcSecLat = radians(1.0f / 3600.0f) * ((a * (1.0f - e2)) / powf(1.0f - e2 * sn2, 1.5f));
 
         return {arcSecLon, arcSecLat};
+    }
+
+    static inline std::tuple<double, double> dxDyMeters(double lat, float dxDeg, float dyDeg)
+    {
+        double a{earthRadius};              /*!< Semi-major axis (a) of the Earth (m) */
+        double f{earthFlattening};          /*!< Flattening factor of the Earth */
+        double e2 = {(2.0f * f) - (f * f)}; /*!< Eccentricity squared of the earth's ellipsoid: (2f - f^2)*/
+
+        // Convert latitude to radians
+        double latR = radians(lat);
+
+        double sn2 = sinf(latR) * sinf(latR);
+        double cs = cosf(latR);
+
+        // Convert distance to meters
+        double dxM = radians(dxDeg) * ((a * cs) / powf(1.0f - e2 * sn2, 1.5f));
+        double dyM = radians(dyDeg) * ((a * (1.0f - e2)) / powf(1.0 - e2 * sn2, 1.5f));
+
+        return {dxM, dyM};
     }
 
     /**
@@ -3213,9 +3232,11 @@ namespace geo
             // Get parameters from the header
             auto [rows, columns, x0, y0, dxDeg, dyDeg, noData] = h.getParameters();
 
-            // Get how many meters has 1 arcsec at y0 latitude
-            auto [lonMeters, latMeters] = arcSecMeters(y0);
+            auto [dx, dy] = dxDyMeters(y0, dxDeg, dyDeg);
 
+            /*
+            // Get how many meters has 1 arcsec at y0 latitude
+            //auto [lonMeters, latMeters] = arcSecMeters(y0, dxDeg, dyDeg);
             // Calculate dx in meters: (round down)
             auto dx = floorf(
                 dxDeg * 3600 // Convert dxDeg to arc secs
@@ -3227,6 +3248,7 @@ namespace geo
                 dyDeg * 3600 // Convert dyDeg to arc secs
                 * latMeters  // Multiply by how many lat meters are there in 1 arcsec at this lat
             );
+            */
 
             // fp points to the first row on the file
             // Load rows into the data buffer in place
