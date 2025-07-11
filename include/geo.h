@@ -918,9 +918,12 @@ namespace geo
         double sn2 = sinf(latR) * sinf(latR);
         double cs = cosf(latR);
 
+        // Convert 1 arc sec to degrees and then to radians
+        double arcSecR = radians(1.0f / 3600.0f);
+
         // Convert 1 arcsec to radians and multiply by the calculated distance
-        double arcSecLon = radians(1.0f / 3600.0f) * ((a * cs) / powf(1.0 - e2 * sn2, 1.5f));
-        double arcSecLat = radians(1.0f / 3600.0f) * ((a * (1.0f - e2)) / powf(1.0f - e2 * sn2, 1.5f));
+        double arcSecLon = arcSecR * ((a * cs) / sqrtf(1.0f - (e2 * sn2)));
+        double arcSecLat = arcSecR * ((a * (1.0f - e2)) / powf(1.0f - e2 * sn2, 1.5f));
 
         return {arcSecLon, arcSecLat};
     }
@@ -934,25 +937,11 @@ namespace geo
      */
     static inline std::tuple<double, double> dxDyMeters(double lat, float dxDeg, float dyDeg)
     {
-        double a{earthRadius};              /*!< Semi-major axis (a) of the Earth (m) */
-        double f{earthFlattening};          /*!< Flattening factor of the Earth */
-        double e2 = {(2.0f * f) - (f * f)}; /*!< Eccentricity squared of the earth's ellipsoid: (2f - f^2)*/
-
-        // Convert latitude to radians
-        double latR = radians(lat);
-
-        // Convert 1 arc sec to degrees and then to radians
-        double arcSecR = radians((1.0f / 3600.0f));
-
-        double sn2 = sinf(latR) * sinf(latR);
-        double cs = cosf(latR);
-
-        float xdst = arcSecR * ((a * cs) / sqrt(1.0f - (e2 * sn2)));
-        float ydst = arcSecR * ((a * (1 - e2)) / (powf(1.0f - (e2 * sn2), 1.5f)));
+        auto [arcSecLon, arcSecLat] = arcSecMeters(lat);
 
         // Convert dx and dy from degrees to arcsecs and then to meters
-        float dxM = dxDeg * 3600.0f * xdst;
-        float dyM = dyDeg * 3600.0f * ydst;
+        float dxM = dxDeg * 3600.0f * arcSecLon;
+        float dyM = dyDeg * 3600.0f * arcSecLat;
 
         return {dxM, dyM};
     }
