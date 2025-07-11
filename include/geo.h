@@ -925,6 +925,13 @@ namespace geo
         return {arcSecLon, arcSecLat};
     }
 
+    /**
+     * @brief Calculates Dx and Dy in meters from Dx and Dy in degrees
+     * @param lat Target latitude
+     * @param dxDeg Dx in degrees
+     * @param dyDeg Dy in degrees
+     * @return std::tuple<double, double>
+     */
     static inline std::tuple<double, double> dxDyMeters(double lat, float dxDeg, float dyDeg)
     {
         double a{earthRadius};              /*!< Semi-major axis (a) of the Earth (m) */
@@ -934,12 +941,18 @@ namespace geo
         // Convert latitude to radians
         double latR = radians(lat);
 
+        // Convert 1 arc sec to degrees and then to radians
+        double arcSecR = radians((1.0f / 3600.0f));
+
         double sn2 = sinf(latR) * sinf(latR);
         double cs = cosf(latR);
 
-        // Convert distance to meters
-        double dxM = radians(dxDeg) * ((a * cs) / powf(1.0f - e2 * sn2, 1.5f));
-        double dyM = radians(dyDeg) * ((a * (1.0f - e2)) / powf(1.0 - e2 * sn2, 1.5f));
+        float xdst = arcSecR * ((a * cs) / sqrt(1.0f - (e2 * sn2)));
+        float ydst = arcSecR * ((a * (1 - e2)) / (powf(1.0f - (e2 * sn2), 1.5f)));
+
+        // Convert dx and dy from degrees to arcsecs and then to meters
+        float dxM = dxDeg * 3600.0f * xdst;
+        float dyM = dyDeg * 3600.0f * ydst;
 
         return {dxM, dyM};
     }
@@ -2406,7 +2419,8 @@ namespace geo
          * @brief Set the no data value
          * @param noData New no data value
          */
-        void setNoData(float noData) {
+        void setNoData(float noData)
+        {
             this->noData = noData;
         }
 
