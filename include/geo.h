@@ -929,24 +929,6 @@ namespace geo
     }
 
     /**
-     * @brief Calculates Dx and Dy in meters from Dx and Dy in degrees
-     * @param lat Target latitude
-     * @param dxDeg Dx in degrees
-     * @param dyDeg Dy in degrees
-     * @return std::tuple<double, double>
-     */
-    static inline std::tuple<double, double> dxDyMeters(double lat, float dxDeg, float dyDeg)
-    {
-        auto [arcSecLon, arcSecLat] = arcSecMeters(lat);
-
-        // Convert dx and dy from degrees to arcsecs and then to meters
-        float dxM = dxDeg * 3600.0f * arcSecLon;
-        float dyM = dyDeg * 3600.0f * arcSecLat;
-
-        return {dxM, dyM};
-    }
-
-    /**
      * @brief Calculates the grid cell size in decimal degrees.
      * @param lat Latitude where the resolution is calculated.
      * @param dxM Grid X resolution in meters
@@ -3235,23 +3217,7 @@ namespace geo
             // Get parameters from the header
             auto [rows, columns, x0, y0, dxDeg, dyDeg, noData] = h.getParameters();
 
-            auto [dx, dy] = dxDyMeters(y0, dxDeg, dyDeg);
-
-            /*
-            // Get how many meters has 1 arcsec at y0 latitude
-            //auto [lonMeters, latMeters] = arcSecMeters(y0, dxDeg, dyDeg);
-            // Calculate dx in meters: (round down)
-            auto dx = floorf(
-                dxDeg * 3600 // Convert dxDeg to arc secs
-                * lonMeters  // Multiply by how many lon meters are there in 1 arcsec at this lat
-            );
-
-            // Calculate dy in meters: (round down)
-            auto dy = floorf(
-                dyDeg * 3600 // Convert dyDeg to arc secs
-                * latMeters  // Multiply by how many lat meters are there in 1 arcsec at this lat
-            );
-            */
+            auto [dx, dy] = cellSizeMeters(y0, dxDeg, dyDeg);
 
             // fp points to the first row on the file
             // Load rows into the data buffer in place
