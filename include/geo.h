@@ -25,6 +25,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <regex>
@@ -64,6 +65,7 @@
 #include <unistd.h>
 #endif
 
+
 using std::map;
 using std::ofstream;
 using std::string;
@@ -96,6 +98,16 @@ namespace geo
 
     /** @brief Flattening factor of the Earth  - 1 / f*/
     static constexpr auto earthFlattening{1.0f / 298.257223563f};
+
+    /**
+     * @brief Checks if a value can be considered as zero
+     * @param val Value to check
+     * @param eps Limit value to be considered as zero
+     * @return true if the value is to be considered as zero, false otherwise.
+     */
+    static inline bool nearToZero(float val, float eps = std::numeric_limits<float>::epsilon()) {
+        return fabs(val) < eps;
+    }
 
     /** @brief String operations. */
     struct Strings
@@ -1610,13 +1622,13 @@ namespace geo
                 // Check data limits
                 if (pos > charData + charDataLength)
                 {
-                    cerr << "Warning! attempting to parse outside of char data" << endl;
+                    cerr << "Warning! attempting to parse outside of char data after reading " << count << " elements." << endl;
                     break;
                 }
 
                 if (end == NULL || end > charData + charDataLength)
                 {
-                    cerr << "Warning! last item spans outside of char data" << endl;
+                    // cerr << "Warning! last item spans outside of char data after reading " << count << " elements."<< endl;
                     break;
                 }
 
@@ -1719,7 +1731,6 @@ namespace geo
                 }
                 else
                 {
-
                     // Set the sentinel item past the last to the default value for the type
                     // if (debug) {
                     // cout <<"Finished reading " << count << " elements. Total size: " << realSize << endl;
@@ -2436,6 +2447,33 @@ namespace geo
         }
 
         /**
+         * @brief Checks if two grid values can be considered the same
+         *
+         * @param rhs Other grid
+         * @param row row on the other grid
+         * @param column column on the other grid
+         * @param threshold Threshold to consider two values as the same
+         * @return bool True if difference between the two values is less than threshold, false otherwise
+         */
+        bool same(const Grid &rhs, int row, int column, float threshold) const
+        {
+            const float valueA = (*this)(row, column);
+            const float valueB = rhs(row, column);
+            // Check if both values are nan, or inf in such case they're considered equal.
+            if ((std::isnan(valueA) && std::isnan(valueB)) || (std::isinf(valueA) && std::isinf(valueB)))
+            {
+                return true;
+            }
+
+            // Check if both values are near to zero no matter the sign
+            if (nearToZero(valueA) && nearToZero(valueB)) {
+                return true;
+            }
+
+            return (fabs(valueA - valueB) < threshold);
+        }
+
+        /**
          * @brief Checks if two grid values match
          *
          * @param rhs Other grid
@@ -2448,14 +2486,21 @@ namespace geo
         {
             const float valueA = (*this)(row, column);
             const float valueB = rhs(row, column);
-            // Check if both values are nan, in such case they're considered equal.
-            if (std::isnan(valueA) && std::isnan(valueB))
+            // Check if both values are nan, or inf in such case they're considered equal.
+            if ((std::isnan(valueA) && std::isnan(valueB)) || (std::isinf(valueA) && std::isinf(valueB)))
             {
                 return true;
             }
 
-            float err = fabs((valueB - valueA) / valueB) * 100.0f;
+            // Check if both values are near to zero no matter the sign
+            if (nearToZero(valueA) && nearToZero(valueB)) {
+                return true;
+            }
 
+            // Calculate relative percent error
+            float err = fabs((valueB - valueA) / valueA) * 100.0f;
+
+            // Values are considered equal if calcualted error is less than provided rpe
             return err < rpe;
         }
 

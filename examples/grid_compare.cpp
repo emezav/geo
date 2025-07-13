@@ -1,7 +1,7 @@
 /**
  * @file
- * @brief Grid diff
- * Usage: grid_diff file1 file2 [rpe showAll]
+ * @brief Grid compare
+ * Usage: grid_diff file1 file2 threshold [showAll]
  * @author Erwin Meza Vega <emezav@unicauca.edu.co> <emezav@gmail.com>
  * @copyright MIT License
  */
@@ -24,6 +24,8 @@ using geo::GridFormat;
 using geo::Strings;
 using geo::geoStatus;
 
+#define EPS 1e-6f
+
 /**
  * @brief Prints program usage
  * @param program Program
@@ -34,10 +36,10 @@ void usage(char *program);
  * @brief Compares the specified positions on the grid
  * @param gridA first grid
  * @param gridB second grid
- * @param rpe Relative Percent Error (maximum allowed difference, percent)
+ * @param threshold Theshold that defines if two values are considered equal
  * @param showAll Show all differences
  */
-void diff(const Grid & gridA, const Grid & gridB, float rpe=1.0f, bool showAll = false);
+void compare(const Grid & gridA, const Grid & gridB, float threshold, bool showAll = false);
 
 int main(int argc, char *argv[])
 {
@@ -52,10 +54,10 @@ int main(int argc, char *argv[])
 
   bool showAll = false;
 
-  float rpe{1.0f};
-  // Check if rpe was provided
+  float threshold{EPS};
+  // Check if threshold was provided
   if (argc >= 4) {
-    rpe = std::strtof(argv[3], nullptr);
+    threshold = std::strtof(argv[3], nullptr);
   }
 
   // Check if showAll was provided after rpe
@@ -81,7 +83,7 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  diff(gridA, gridB, rpe, showAll);
+  compare(gridA, gridB, threshold, showAll);
 
   exit(EXIT_SUCCESS);
 
@@ -91,16 +93,16 @@ void usage(char *program)
 {
   cerr
       << "Usage: "
-      << program << " gridA gridB [rpe(1-100) showAll]" << endl
+      << program << " gridA gridB threshold [showAll]" << endl
       << " Compares two grids and prints differences: row,column,valueA,valueB" << endl
-      << " rpe is desired Relative Percent Error, defaults to 1 percent." << endl
+      << " threshold is the maximum allowed difference between two values." << endl
       << " set showAll to true to show all diffs." << endl
       << " Grid format will be deduced from the file extension.";
 
     exit(EXIT_SUCCESS);
 }
 
-void diff(const Grid & gridA, const Grid & gridB, float rpe, bool showAll) {
+void compare(const Grid & gridA, const Grid & gridB, float threshold, bool showAll) {
 
   if (!gridA.equalDimensions(gridB)) {
     cout << "Dimensions are different." << endl;
@@ -112,7 +114,7 @@ void diff(const Grid & gridA, const Grid & gridB, float rpe, bool showAll) {
   int count = 0;
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < columns; j++) {
-      if (!gridA.equalsAt(gridB, i, j, rpe)) {
+      if (!gridA.same(gridB, i, j, threshold)) {
         if (count++ < 100 || showAll) {
         // Show difference
         cout << i << "," << j <<": "<<gridA(i,j) << " <-> " << gridB(i,j) << endl;
