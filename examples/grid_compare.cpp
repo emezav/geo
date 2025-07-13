@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Grid compare
- * Usage: grid_diff file1 file2 threshold [showAll]
+ * Usage: grid_compare file1 file2 threshold [showAll]
  * @author Erwin Meza Vega <emezav@unicauca.edu.co> <emezav@gmail.com>
  * @copyright MIT License
  */
