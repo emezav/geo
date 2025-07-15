@@ -2505,6 +2505,26 @@ namespace geo
         }
 
         /**
+         * @brief Returns the position (column, row) inside the grid from the provided coordinates
+         * @param x Longitude
+         * @param y Latitude
+         */
+        std::tuple<int, int>position(double x, double y) {
+
+            double xMax = this->x0 + (this->dxDeg * (double)this->columns) + this->dxDeg;
+            double yMax = this->y0 + (this->dyDeg * (double)this->rows) + this->dyDeg;
+
+            if (x < this->x0 || x > xMax || y < this->y0 ||  y > yMax) {
+                return {-1, -1};
+            }
+
+            double di = (x - this->x0)/ this->dxDeg;
+            double dj = (y - this->y0) / this->dyDeg;
+
+            return {static_cast<int>(di), static_cast<int>(dj)};
+        }
+
+        /**
          * @brief Checks if this grid has equal dimensions with rhs
          * @param rhs Grid to compare
          * @return true if both grids have the same dimensions
