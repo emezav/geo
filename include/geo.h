@@ -2518,8 +2518,8 @@ namespace geo
                 return {-1, -1};
             }
 
-            double di = (x - this->x0)/ this->dxDeg;
-            double dj = (y - this->y0) / this->dyDeg;
+            double di = floorf((x - this->x0)/ this->dxDeg);
+            double dj = floorf((y - this->y0) / this->dyDeg);
 
             return {static_cast<int>(di), static_cast<int>(dj)};
         }

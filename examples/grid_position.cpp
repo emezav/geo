@@ -47,8 +47,9 @@ int main(int argc, char *argv[])
   }
 
   auto [i,j] = grid.position(atof(argv[2]), atof(argv[3]));
+  auto [rows, columns] = grid.dimensions();
   cout << "Input coordinates: " << argv[1] <<"," << argv[2] << endl
-       << "Position: " << i<<","<< j<< endl;
+       << "Position: " << i<<","<< j<< " Inverse row: " << i << "," << rows - j << endl;
 
 
   exit(EXIT_SUCCESS);
