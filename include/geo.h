@@ -65,7 +65,6 @@
 #include <unistd.h>
 #endif
 
-
 using std::map;
 using std::ofstream;
 using std::string;
@@ -105,7 +104,8 @@ namespace geo
      * @param eps Limit value to be considered as zero
      * @return true if the value is to be considered as zero, false otherwise.
      */
-    static inline bool nearToZero(float val, float eps = std::numeric_limits<float>::epsilon()) {
+    static inline bool nearToZero(float val, float eps = std::numeric_limits<float>::epsilon())
+    {
         return fabs(val) < eps;
     }
 
@@ -2466,7 +2466,8 @@ namespace geo
             }
 
             // Check if both values are near to zero no matter the sign
-            if (nearToZero(valueA) && nearToZero(valueB)) {
+            if (nearToZero(valueA) && nearToZero(valueB))
+            {
                 return true;
             }
 
@@ -2493,7 +2494,8 @@ namespace geo
             }
 
             // Check if both values are near to zero no matter the sign
-            if (nearToZero(valueA) && nearToZero(valueB)) {
+            if (nearToZero(valueA) && nearToZero(valueB))
+            {
                 return true;
             }
 
@@ -2508,20 +2510,38 @@ namespace geo
          * @brief Returns the position (column, row) inside the grid from the provided coordinates
          * @param x Longitude
          * @param y Latitude
+         * @param x0 Lower left corner longitude
+         * @param y0 Lower left corner latitude
+         * @param rows Rows
+         * @param columns Columns
+         * @param dxDeg Grid X resolution in degrees
+         * @param dyDeg Grid Y resolution in degrees
          */
-        std::tuple<int, int>position(double x, double y) {
+        static std::tuple<int, int> position(double x, double y, double x0, double y0, int rows, int columns, double dxDeg, double dyDeg)
+        {
 
-            double xMax = this->x0 + (this->dxDeg * (double)this->columns) + this->dxDeg;
-            double yMax = this->y0 + (this->dyDeg * (double)this->rows) + this->dyDeg;
+            double xMax = x0 + (dxDeg * (double)(columns - 1));
+            double yMax = y0 + (dyDeg * (double)(rows));
 
-            if (x < this->x0 || x > xMax || y < this->y0 ||  y > yMax) {
+            if (x < x0 || x > xMax || y < y0 || y > yMax)
+            {
                 return {-1, -1};
             }
 
-            double di = floorf((x - this->x0)/ this->dxDeg);
-            double dj = floorf((y - this->y0) / this->dyDeg);
+            double di = floorf((x - x0) / dxDeg);
+            double dj = floorf((y - y0) / dyDeg);
 
             return {static_cast<int>(di), static_cast<int>(dj)};
+        }
+
+        /**
+         * @brief Returns the position (column, row) inside the grid from the provided coordinates
+         * @param x Longitude
+         * @param y Latitude
+         */
+        std::tuple<int, int> position(double x, double y)
+        {
+            return position(x, y, this->x0, this->y0, this->rows, this->columns, this->dxDeg, this->dyDeg);
         }
 
         /**
