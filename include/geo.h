@@ -5567,6 +5567,31 @@ namespace geo
     }
 
     /**
+     * @brief Returnst tue file extension according to the grid format.
+     * @param format Grid format
+     * @return string Associated file extension
+     */
+    static inline string gridExtension(GridFormat format) {
+        switch(format) {
+            case GridFormat::ESRI_ASCII:
+                return ".asc";
+            case GridFormat::ESRI_FLOAT:
+                return ".bil";
+            case GridFormat::ENVI_DOUBLE:
+            case GridFormat::ENVI_FLOAT:
+                return ".flt";
+            case GridFormat::SURFER_ASCII:
+            case GridFormat::SURFER_FLOAT:
+            case GridFormat::SURFER_DOUBLE:
+                return ".grd";
+            case GridFormat::TEXT:
+            case GridFormat::TEXT_REVERSE:
+                return ".txt";
+            default: return "";
+        }
+    }
+
+    /**
      * @brief Loads a grid, guessing the format from the extension.
      * @param grid Target grid
      * @param path File path
