@@ -133,6 +133,18 @@ namespace geo
         /**
          * @brief Converts string to lowercase
          *
+         * @param s A string to process.
+         * @return copy of string in lowercase.
+         */
+        static string tolower(const string &s)
+        {
+            string result = s;
+            return tolower(result);
+        }
+
+        /**
+         * @brief Converts string to lowercase
+         *
          * @param [in,out] s A string to process.
          *
          * @returns A reference to a string.
@@ -145,6 +157,18 @@ namespace geo
                           { c = std::toupper(c); });
 
             return s;
+        }
+
+        /**
+         * @brief Converts string to uppercase
+         *
+         * @param s A string to process.
+         * @return string copy of string in uppercase.
+         */
+        static string toupper(const string &s)
+        {
+            string result = s;
+            return toupper(result);
         }
 
         /**
@@ -161,6 +185,7 @@ namespace geo
             return s;
         }
 
+       
         /**
          * @brief trim from start (in place)
          *
@@ -195,6 +220,19 @@ namespace geo
             return s;
         }
 
+         /**
+         * @brief trim from start (copy)
+         *
+         * @param s A string to process.
+         * @return string copy of string with leading whitespace removed.
+         */
+        static string ltrim(const string &s)
+        {
+            string result = s;
+            return ltrim(result);
+        }
+
+
         /**
          * @brief trim from end (in place)
          *
@@ -211,6 +249,18 @@ namespace geo
                         .base(),
                     s.end());
             return s;
+        }
+
+        /**
+         * @brief trim from end (copy)
+         *
+         * @param s A string to process.
+         * @return string copy of string with trailing whitespace removed.
+         */
+        static string rtrim(const string &s)
+        {
+            string result = s;
+            return rtrim(result);
         }
 
         /**
@@ -244,6 +294,18 @@ namespace geo
             rtrim(s, except_func);
 
             return s;
+        }
+
+        /**
+         * @brief trim from both ends (copy)
+         *
+         * @param s A string to process.
+         * @return string copy of string with leading and trailing whitespace removed.
+         */
+        static string trim(const string &s)
+        {
+            string result = s;
+            return trim(result);
         }
 
         /**
