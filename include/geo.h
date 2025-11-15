@@ -185,7 +185,6 @@ namespace geo
             return s;
         }
 
-       
         /**
          * @brief trim from start (in place)
          *
@@ -220,7 +219,7 @@ namespace geo
             return s;
         }
 
-         /**
+        /**
          * @brief trim from start (copy)
          *
          * @param s A string to process.
@@ -231,7 +230,6 @@ namespace geo
             string result = s;
             return ltrim(result);
         }
-
 
         /**
          * @brief trim from end (in place)
@@ -522,7 +520,7 @@ namespace geo
          * @param newLineChars Newline characters
          * @return vector of tuples {offset, length} of lines from the start of data.
          */
-        static vector<tuple<const size_t, const size_t>> scan(const string &str, const string & newLineChars = "\r\n")
+        static vector<tuple<const size_t, const size_t>> scan(const string &str, const string &newLineChars = "\r\n")
         {
 
             vector<tuple<const size_t, const size_t>> lineRanges;
@@ -656,7 +654,7 @@ namespace geo
          * @param newLineChars Newline characters to split by
          * @return vector<string> Vector of substrings
          */
-        static vector<string> splitLines(const string &str, const string & newLineChars = "\r\n")
+        static vector<string> splitLines(const string &str, const string &newLineChars = "\r\n")
         {
 
             vector<string> lines;
@@ -722,7 +720,7 @@ namespace geo
          * @param newLineChars Newline characters
          * @return vector<string> Vector of lines
          */
-        static vector<string> readLines(const string &path, const string & newLineChars = "\r\n")
+        static vector<string> readLines(const string &path, const string &newLineChars = "\r\n")
         {
             string fileContents = loadFile(path);
             return splitLines(fileContents, newLineChars);
@@ -734,7 +732,7 @@ namespace geo
          * @param newLineChars Newline characters
          * @return vector<string> Vector of lines
          */
-        static vector<string> readLines(FILE * fp, size_t fileSize, const string & newLineChars = "\r\n")
+        static vector<string> readLines(FILE *fp, size_t fileSize, const string &newLineChars = "\r\n")
         {
             string fileContents;
 
@@ -1124,28 +1122,12 @@ namespace geo
          * @param text Options text. Several lines are separated by "\n"
          * @param equalSign Equal sign, defaults to '='
          */
-        Options(const string &text = "", const char equalSign = '=') : equalSign(equalSign)
+        Options(const string &text = "", const char equalSign = '=', const string &newLineChars = "\r\n") : equalSign(equalSign), newLineChars(newLineChars)
         {
             if (text.length())
             {
                 string data(text);
-                parse(data, this->equalSign);
-            }
-        }
-
-        /**
-         * @brief Construct a new Options object
-         *
-         * @param text Options text. Several lines are separated by newLineChars
-         * @param equalSign Equal sign, defaults to '='
-         * @param newLineChars Newline characters
-         */
-        Options(const string &text , const char equalSign , const string & newLineChars) : equalSign(equalSign)
-        {
-            if (text.length())
-            {
-                string data(text);
-                parse(data, this->equalSign, newLineChars);
+                parse(data, this->equalSign, this->newLineChars);
             }
         }
 
@@ -1191,65 +1173,32 @@ namespace geo
         }
 
         /**
-         * @brief Parses an option string. Multiple lines must be separated with '\n'
+         * @brief Parses an option string. Multiple lines must be separated with '\r\n'
+         * @param data Data string to parse
+         */
+        virtual void parse(const string &data)
+        {
+            parse(data, this->equalSign, this->newLineChars);
+        }
+
+        /**
+         * @brief Parses an option string. Multiple lines must be separated with '\r\n'
          *
          * @param data Data string to parse
          * @param equalSign Equal sign
          */
         virtual void parse(const string &data, char equalSign)
         {
-            // Erase any existing data
-            this->clear();
-
-            // Get lines
-            auto lines = Strings::splitLines(data);
-
-            std::string currentOption = "";
-
-            for (auto &l : lines)
-            {
-                Strings::trim(l);
-                // Ignore blank and commented lines
-                if (l.length() == 0 || l[0] == ';' || l[0] == '#')
-                {
-                    continue;
-                }
-
-                // Is there a new option?
-                if (l.find_first_of(this->equalSign) != string::npos)
-                {
-                    if (currentOption.length())
-                    {
-                        // Parse current option
-                        set(currentOption);
-                        currentOption = Strings::trim(l);
-                    }
-                    else
-                    {
-                        currentOption += Strings::trim(l);
-                    }
-                }
-                else
-                {
-                    currentOption += Strings::trim(l);
-                }
-            }
-
-            // Parse last option
-            if (currentOption.length())
-            {
-                set(currentOption);
-            }
+            parse(data, equalSign, this->newLineChars);
         }
 
         /**
-         * @brief Parses an option string. Multiple lines must be separated with '\n'
+         * @brief Parses an option string. Multiple lines must be separated with '\r\n'
          *
          * @param data Data string to parse
          * @param equalSign Equal sign
-         * @param newLineChars Newline chars
          */
-        virtual void parse(const string &data, char equalSign, string newLineChars)
+        virtual void parse(const string &data, char equalSign, const string &newLineChars)
         {
             // Erase any existing data
             this->clear();
@@ -1263,13 +1212,13 @@ namespace geo
             {
                 Strings::trim(l);
                 // Ignore blank and commented lines
-                if (l.length() == 0 || l[0] == ':' || l[0] == '#')
+                if (l.length() == 0 || l[0] == ';' || l[0] == '#')
                 {
                     continue;
                 }
 
                 // Is there a new option?
-                if (l.find_first_of(this->equalSign) != string::npos)
+                if (l.find_first_of(equalSign) != string::npos)
                 {
                     if (currentOption.length())
                     {
@@ -1301,7 +1250,7 @@ namespace geo
          * @param equalSign Equal sign character
          * @param newLineChars Newline characters
          */
-        virtual void parseFile (const string & path, char equalSign = '=' , const string & newLineChars = "\r\n")
+        void parseFile(const string &path, char equalSign = '=', const string &newLineChars = "\r\n")
         {
             string fileContents = Strings::loadFile(path);
             parse(fileContents, equalSign, newLineChars);
@@ -1544,6 +1493,7 @@ namespace geo
         std::map<std::string, std::string> options; /*!< Options map */
         std::vector<std::string> keys;              /*!< Keys in order of insertion */
         char equalSign{'='};                        /*!< Equal sign*/
+        std::string newLineChars{"\r\n"};           /*!< New line characters */
     };
 
     template <class T, class F>
@@ -3109,7 +3059,7 @@ namespace geo
              * @param data Header data as string
              * @param equalSign Equal sign. Overriden to ' ' (space)
              */
-            virtual void parse(const string &data, char equalSign = ' ') override
+            virtual void parse(const string &data) override
             {
                 // Override user specified sign, ESRI uses ' ' as equal sign
                 Options::parse(data, this->equalSign);
@@ -3193,6 +3143,27 @@ namespace geo
                     this->noData = this->getFloat("nodata_value");
                     this->noDataDefined = true;
                 }
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             */
+            virtual void parse(const string &data, char equalSign) override
+            {
+                this->parse(data); // Override user supplied equal sign
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             * @param newLineChars New line characters (overriden)
+             */
+            virtual void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -3311,7 +3282,7 @@ namespace geo
              * @param data BinaryHeader data as string
              * @param equalSign Equal sign. Overriden to ' ' (space)
              */
-            void parse(const string &data, char equalSign = ' ') override
+            void parse(const string &data) override
             {
                 // Override user specified sign, ESRI uses ' ' as equal sign
                 Options::parse(data, this->equalSign);
@@ -3392,6 +3363,28 @@ namespace geo
                     this->noData = this->getFloat("nodata");
                     this->noDataDefined = true;
                 }
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             */
+            void parse(const string &data, char equalSign) override
+            {
+                this->parse(data); // Override user supplied equal sign
+            }
+
+            /**
+             * @brief Parses header
+             *
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             * @param newLineChars New line characters (overriden)
+             */
+            void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -3988,11 +3981,11 @@ namespace geo
              * @param data String to parse
              * @param equalSign Equal sign
              */
-            void parse(const string &data, char equalSign = '=') override
+            void parse(const string &data) override
             {
                 //   ENVI header is valid only if the first line starts with "ENVI"
 
-                auto lines = Strings::splitLines(data);
+                auto lines = Strings::splitLines(data, newLineChars);
 
                 if (!lines.size())
                 {
@@ -4064,6 +4057,27 @@ namespace geo
                     this->noData = this->getFloat("data ignore value");
                     this->noDataDefined = true;
                 }
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             */
+            void parse(const string &data, char equalSign) override
+            {
+                this->parse(data); // Override user supplied equal sign
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             * @param newLineChars New line characters (overriden)
+             */
+            void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -4643,7 +4657,7 @@ namespace geo
              * @param data String data (ignored)
              * @param equalSign (ignored)
              */
-            void parse(const string &data, char equalSign = ' ') override
+            void parse(const string &data) override
             {
 
                 // x0Center, xMaxCenter, y0Center and yMaxCenter attributes
@@ -4669,6 +4683,27 @@ namespace geo
                     this->originDefined =
                         this->resolutionDefined =
                             this->noDataDefined = true;
+            }
+
+            /**
+             * @brief Parse header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             */
+            void parse(const string &data, char equalSign) override
+            {
+                this->parse(data); // Override user supplied equal sign
+            }
+
+            /**
+             * @brief Parse header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             * @param newLineChars New line characters (overriden)
+             */
+            void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -5745,23 +5780,26 @@ namespace geo
      * @param format Grid format
      * @return string Associated file extension
      */
-    static inline string gridExtension(GridFormat format) {
-        switch(format) {
-            case GridFormat::ESRI_ASCII:
-                return ".asc";
-            case GridFormat::ESRI_FLOAT:
-                return ".bil";
-            case GridFormat::ENVI_DOUBLE:
-            case GridFormat::ENVI_FLOAT:
-                return ".flt";
-            case GridFormat::SURFER_ASCII:
-            case GridFormat::SURFER_FLOAT:
-            case GridFormat::SURFER_DOUBLE:
-                return ".grd";
-            case GridFormat::TEXT:
-            case GridFormat::TEXT_REVERSE:
-                return ".txt";
-            default: return "";
+    static inline string gridExtension(GridFormat format)
+    {
+        switch (format)
+        {
+        case GridFormat::ESRI_ASCII:
+            return ".asc";
+        case GridFormat::ESRI_FLOAT:
+            return ".bil";
+        case GridFormat::ENVI_DOUBLE:
+        case GridFormat::ENVI_FLOAT:
+            return ".flt";
+        case GridFormat::SURFER_ASCII:
+        case GridFormat::SURFER_FLOAT:
+        case GridFormat::SURFER_DOUBLE:
+            return ".grd";
+        case GridFormat::TEXT:
+        case GridFormat::TEXT_REVERSE:
+            return ".txt";
+        default:
+            return "";
         }
     }
 
