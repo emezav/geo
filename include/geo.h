@@ -3057,14 +3057,36 @@ namespace geo
              * @brief Parses header
              *
              * @param data Header data as string
-             * @param equalSign Equal sign. Overriden to ' ' (space)
+             * @param equalSign Equal sign.
              */
             virtual void parse(const string &data) override
             {
-                // Override user specified sign, ESRI uses ' ' as equal sign
-                Options::parse(data, this->equalSign);
+                this->parse(data, this->equalSign, this->newLineChars);
+            }
 
-                // No key / values defined? return.
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign
+             */
+            virtual void parse(const string &data, char equalSign) override
+            {
+                this->parse(data, equalSign, this->newLineChars);
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign
+             * @param newLineChars New line characters
+             */
+            virtual void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+
+                // Parse key / values
+
+                Options::parse(data, equalSign, newLineChars);
+                 // No key / values defined? return.
                 if (this->empty())
                 {
                     return;
@@ -3143,27 +3165,6 @@ namespace geo
                     this->noData = this->getFloat("nodata_value");
                     this->noDataDefined = true;
                 }
-            }
-
-            /**
-             * @brief Parses header
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             */
-            virtual void parse(const string &data, char equalSign) override
-            {
-                this->parse(data); // Override user supplied equal sign
-            }
-
-            /**
-             * @brief Parses header
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             * @param newLineChars New line characters (overriden)
-             */
-            virtual void parse(const string &data, char equalSign, const string &newLineChars) override
-            {
-                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -3280,14 +3281,34 @@ namespace geo
              * @brief Parses header
              *
              * @param data BinaryHeader data as string
-             * @param equalSign Equal sign. Overriden to ' ' (space)
              */
             void parse(const string &data) override
             {
-                // Override user specified sign, ESRI uses ' ' as equal sign
-                Options::parse(data, this->equalSign);
+                this->parse(data, this->equalSign, this->newLineChars);
+            }
 
-                // No key / values defined? return.
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign
+             */
+            void parse(const string &data, char equalSign) override
+            {
+                this->parse(data, equalSign, this->newLineChars);
+            }
+
+            /**
+             * @brief Parses header
+             *
+             * @param data Header data
+             * @param equalSign Equal sign
+             * @param newLineChars New line characters
+             */
+            void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+                Options::parse(data, equalSign, newLineChars);
+
+                 // No key / values defined? return.
                 if (this->empty())
                 {
                     return;
@@ -3363,28 +3384,6 @@ namespace geo
                     this->noData = this->getFloat("nodata");
                     this->noDataDefined = true;
                 }
-            }
-
-            /**
-             * @brief Parses header
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             */
-            void parse(const string &data, char equalSign) override
-            {
-                this->parse(data); // Override user supplied equal sign
-            }
-
-            /**
-             * @brief Parses header
-             *
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             * @param newLineChars New line characters (overriden)
-             */
-            void parse(const string &data, char equalSign, const string &newLineChars) override
-            {
-                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -3984,7 +3983,6 @@ namespace geo
             void parse(const string &data) override
             {
                 //   ENVI header is valid only if the first line starts with "ENVI"
-
                 auto lines = Strings::splitLines(data, newLineChars);
 
                 if (!lines.size())
@@ -4001,9 +3999,33 @@ namespace geo
                 // Remove first line (ENVI)
                 lines.erase(lines.begin());
 
-                Options::parse(Strings::join(lines, "\n"), this->equalSign);
+                this->parse(Strings::join(lines, "\n"), this->equalSign);
 
-                // No key / values defined? return.
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             */
+            void parse(const string &data, char equalSign) override
+            {
+                this->parse(data, equalSign, this->newLineChars);
+            }
+
+            /**
+             * @brief Parses header
+             * @param data Header data
+             * @param equalSign Equal sign
+             * @param newLineChars New line characters
+             */
+            void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+
+                // Parse key/values
+                Options::parse(data, equalSign, newLineChars);
+
+                 // No key / values defined? return.
                 if (this->empty())
                 {
                     return;
@@ -4057,27 +4079,6 @@ namespace geo
                     this->noData = this->getFloat("data ignore value");
                     this->noDataDefined = true;
                 }
-            }
-
-            /**
-             * @brief Parses header
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             */
-            void parse(const string &data, char equalSign) override
-            {
-                this->parse(data); // Override user supplied equal sign
-            }
-
-            /**
-             * @brief Parses header
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             * @param newLineChars New line characters (overriden)
-             */
-            void parse(const string &data, char equalSign, const string &newLineChars) override
-            {
-                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -4654,14 +4655,39 @@ namespace geo
 
             /**
              * @brief Parse 32-bit binary or text header data
-             * @param data String data (ignored)
-             * @param equalSign (ignored)
+             * @param data String data
              */
             void parse(const string &data) override
             {
 
-                // x0Center, xMaxCenter, y0Center and yMaxCenter attributes
+               this->parse(data, this->equalSign, this->newLineChars);
+            }
+
+            /**
+             * @brief Parse header
+             * @param data Header data
+             * @param equalSign Equal sign
+             */
+            void parse(const string &data, char equalSign) override
+            {
+                this->parse(data, equalSign, this->newLineChars);
+            }
+
+            /**
+             * @brief Parse header
+             * @param data Header data
+             * @param equalSign Equal sign (overriden)
+             * @param newLineChars New line characters (overriden)
+             */
+            void parse(const string &data, char equalSign, const string &newLineChars) override
+            {
+
+                // No need to call Options::parse, attributes
+                // (x0Center, xMaxCenter, y0Center and yMaxCenter attributes
                 // already set from parseTextHeader or parseBinary32Header
+
+
+                // Set remaining attributes (dx, dy, x0, y0, xMax, yMax, noData)
 
                 double xMinCenter = this->x0Center;
                 double xMaxCenter = this->xMaxCenter;
@@ -4683,27 +4709,6 @@ namespace geo
                     this->originDefined =
                         this->resolutionDefined =
                             this->noDataDefined = true;
-            }
-
-            /**
-             * @brief Parse header
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             */
-            void parse(const string &data, char equalSign) override
-            {
-                this->parse(data); // Override user supplied equal sign
-            }
-
-            /**
-             * @brief Parse header
-             * @param data Header data
-             * @param equalSign Equal sign (overriden)
-             * @param newLineChars New line characters (overriden)
-             */
-            void parse(const string &data, char equalSign, const string &newLineChars) override
-            {
-                this->parse(data); // Override user supplied equal sign and new line chars
             }
 
             /**
@@ -4811,6 +4816,7 @@ namespace geo
                 // Set dataType to binary
                 this->type = fileType::FLOAT;
 
+                // Parse header string (although not used for anything)
                 this->parse(headerString);
             }
 
