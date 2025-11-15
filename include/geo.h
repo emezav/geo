@@ -339,7 +339,7 @@ namespace geo
          * @returns A vector&lt;string&gt;
          */
 
-        static vector<string> split(const string &str, char delim)
+        static vector<string> split(const string &str, const char delim)
         {
             vector<string> ret;
 
@@ -365,7 +365,7 @@ namespace geo
          * @returns A vector&lt;string&gt;
          */
 
-        static vector<string> split(const string &str, string delim)
+        static vector<string> split(const string &str, const string &delim)
         {
             vector<string> ret;
 
@@ -518,9 +518,11 @@ namespace geo
 
         /**
          * @brief Scans the file contents looking for new line characters.
+         * @param str String to scan
+         * @param newLineChars Newline characters
          * @return vector of tuples {offset, length} of lines from the start of data.
          */
-        static vector<tuple<const size_t, const size_t>> scan(const string &str)
+        static vector<tuple<const size_t, const size_t>> scan(const string &str, const string & newLineChars = "\r\n")
         {
 
             vector<tuple<const size_t, const size_t>> lineRanges;
@@ -538,7 +540,7 @@ namespace geo
 
                 isNewLine = false;
                 // Check if current char is a newline
-                if (c == '\r' || c == '\n')
+                if (newLineChars.find(c) != string::npos)
                 {
                     isNewLine = true;
                 }
@@ -648,12 +650,13 @@ namespace geo
         }
 
         /**
-         * @brief Splits a string by newline character
+         * @brief Splits a string by newline characters
          *
          * @param str String to split
+         * @param newLineChars Newline characters to split by
          * @return vector<string> Vector of substrings
          */
-        static vector<string> splitLines(const string &str)
+        static vector<string> splitLines(const string &str, const string & newLineChars = "\r\n")
         {
 
             vector<string> lines;
@@ -671,7 +674,7 @@ namespace geo
 
                 isNewLine = false;
                 // Check if current char is a newline
-                if (c == '\r' || c == '\n')
+                if (newLineChars.find(c) != string::npos)
                 {
                     isNewLine = true;
                 }
@@ -710,6 +713,34 @@ namespace geo
                 insideLine = false;
             }
             return lines;
+        }
+
+        /**
+         * @brief Reads all lines from a file into a vector of strings
+         *
+         * @param path File path
+         * @param newLineChars Newline characters
+         * @return vector<string> Vector of lines
+         */
+        static vector<string> readLines(const string &path, const string & newLineChars = "\r\n")
+        {
+            string fileContents = loadFile(path);
+            return splitLines(fileContents, newLineChars);
+        }
+
+        /**
+         * @brief Reads all lines from an opened file into a vector of strings
+         * @param fp Pointer to opened file
+         * @param newLineChars Newline characters
+         * @return vector<string> Vector of lines
+         */
+        static vector<string> readLines(FILE * fp, size_t fileSize, const string & newLineChars = "\r\n")
+        {
+            string fileContents;
+
+            loadFile(fp, fileSize, fileContents);
+
+            return splitLines(fileContents, newLineChars);
         }
 
         /**
@@ -1103,6 +1134,22 @@ namespace geo
         }
 
         /**
+         * @brief Construct a new Options object
+         *
+         * @param text Options text. Several lines are separated by newLineChars
+         * @param equalSign Equal sign, defaults to '='
+         * @param newLineChars Newline characters
+         */
+        Options(const string &text , const char equalSign , const string & newLineChars) : equalSign(equalSign)
+        {
+            if (text.length())
+            {
+                string data(text);
+                parse(data, this->equalSign, newLineChars);
+            }
+        }
+
+        /**
          * @brief Sets the value for an option
          *
          * @param key Option key
@@ -1193,6 +1240,71 @@ namespace geo
             {
                 set(currentOption);
             }
+        }
+
+        /**
+         * @brief Parses an option string. Multiple lines must be separated with '\n'
+         *
+         * @param data Data string to parse
+         * @param equalSign Equal sign
+         * @param newLineChars Newline chars
+         */
+        virtual void parse(const string &data, char equalSign, string newLineChars)
+        {
+            // Erase any existing data
+            this->clear();
+
+            // Get lines
+            auto lines = Strings::splitLines(data, newLineChars);
+
+            std::string currentOption = "";
+
+            for (auto &l : lines)
+            {
+                Strings::trim(l);
+                // Ignore blank and commented lines
+                if (l.length() == 0 || l[0] == ':' || l[0] == '#')
+                {
+                    continue;
+                }
+
+                // Is there a new option?
+                if (l.find_first_of(this->equalSign) != string::npos)
+                {
+                    if (currentOption.length())
+                    {
+                        // Parse current option
+                        set(currentOption);
+                        currentOption = Strings::trim(l);
+                    }
+                    else
+                    {
+                        currentOption += Strings::trim(l);
+                    }
+                }
+                else
+                {
+                    currentOption += Strings::trim(l);
+                }
+            }
+
+            // Parse last option
+            if (currentOption.length())
+            {
+                set(currentOption);
+            }
+        }
+
+        /**
+         * @brief Parses an option file
+         * @param path File path
+         * @param equalSign Equal sign character
+         * @param newLineChars Newline characters
+         */
+        virtual void parseFile (const string & path, char equalSign = '=' , const string & newLineChars = "\r\n")
+        {
+            string fileContents = Strings::loadFile(path);
+            parse(fileContents, equalSign, newLineChars);
         }
 
         /**
