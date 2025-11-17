@@ -5810,6 +5810,38 @@ namespace geo
     }
 
     /**
+     * @brief Returns the grid format based on the file extension.
+     * @param ext File extension
+     * @return GridFormat Corresponding grid format
+     */
+    static inline GridFormat gridFormatFromExtension(const string &ext)
+    {
+        string lowerExt = Strings::tolower(ext);
+
+        if (lowerExt.compare(".asc") == 0)
+        {
+            return GridFormat::ESRI_ASCII;
+        }
+        else if (lowerExt.compare(".bil") == 0)
+        {
+            return GridFormat::ESRI_FLOAT;
+        }
+        else if (lowerExt.compare(".flt") == 0)
+        {
+            return GridFormat::ENVI_FLOAT;
+        }
+        else if (lowerExt.compare(".grd") == 0)
+        {
+            return GridFormat::SURFER_FLOAT;
+        }
+        else if (lowerExt.compare(".txt") == 0 || lowerExt.compare(".dat") == 0)
+        {
+            return GridFormat::TEXT;
+        }
+        return GridFormat::UNKNOWN;
+    }
+
+    /**
      * @brief Loads a grid, guessing the format from the extension.
      * @param grid Target grid
      * @param path File path
