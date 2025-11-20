@@ -813,7 +813,10 @@ namespace geo
         {"surfer6", GridFormat::SURFER_FLOAT},
         {"surfer7", GridFormat::SURFER_DOUBLE},
         {"txtfrf", GridFormat::TEXT},
-        {"txtlrf", GridFormat::TEXT_REVERSE}};
+        {"txtlrf", GridFormat::TEXT_REVERSE},
+        {"frf", GridFormat::TEXT},
+        {"lrf", GridFormat::TEXT_REVERSE},
+    };
 
     /**
      * @brief Get the format from a string
