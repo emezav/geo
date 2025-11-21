@@ -815,8 +815,7 @@ namespace geo
         {"txtfrf", GridFormat::TEXT},
         {"txtlrf", GridFormat::TEXT_REVERSE},
         {"frf", GridFormat::TEXT},
-        {"lrf", GridFormat::TEXT_REVERSE},
-    };
+        {"lrf", GridFormat::TEXT_REVERSE}};
 
     /**
      * @brief Get the format from a string
@@ -2634,6 +2633,23 @@ namespace geo
         }
 
         /**
+         * @brief Returns the coordinates (longitude, latitude) of the specified grid position
+         * @param column Column
+         * @param row Row
+         * @param x0 Starting longitude of the grid
+         * @param y0 Starting latitude of the grid
+         * @param dxDeg Grid X resolution in degrees
+         * @param dyDeg Grid Y resolution in degrees
+         * @return std::tuple<float, float> Coordinates (longitude, latitude) of the specified grid position
+         */
+        static std::tuple<float, float> coordinates(int column, int row, double x0, double y0, double dxDeg, double dyDeg)
+        {
+            double x = x0 + (dxDeg * (double)column);
+            double y = y0 + (dyDeg * (double)row);
+            return {static_cast<float>(x), static_cast<float>(y)};
+        }
+
+        /**
          * @brief Returns the position (column, row) inside the grid from the provided coordinates
          * @param x Longitude
          * @param y Latitude
@@ -2669,6 +2685,15 @@ namespace geo
         std::tuple<int, int> position(double x, double y)
         {
             return position(x, y, this->x0, this->y0, this->rows, this->columns, this->dxDeg, this->dyDeg);
+        }
+
+        /**
+         * @brief Returns the coordinates (longitude, latitude) from the provided column and row
+         * @param column Column
+         * @param row Row
+         */
+        std::tuple<float, float>coordinates(int column, int row) {
+            return coordinates(column, row, this->x0, this->y0, this->dxDeg, this->dyDeg);
         }
 
         /**
