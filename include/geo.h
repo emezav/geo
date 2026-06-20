@@ -1931,8 +1931,8 @@ namespace geo
             // Get system page size
             int pageSize = getPageSize();
 
-            // Allocate memory for the whole file plus some bytes at the end
-            char *data = (char *)malloc(fileSize + (fileSize % (2 * sizeof(T))));
+            // Allocate memory for the whole file plus padding for null terminators and alignment
+            char *data = (char *)malloc(fileSize + 2 * sizeof(T));
 
             if (data == NULL)
             {
